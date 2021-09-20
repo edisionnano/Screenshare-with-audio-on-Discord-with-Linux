@@ -14,7 +14,7 @@ It's a pretty simple one and emanates from the paragraph above. Basically, since
 
 ## The Problems
 As mentioned in the prologue there are still some issues to be resolved.
-1. Screenshare is only 720p 30fps. This can probably be fixed by forcing frameRate, width and heigh Video constraints
-2. Audio on both the microphone is stream and the desktop stream is in mono. Forcing the channelCount: 2 constraint solely doesn't fix it. (Check [that](https://bugs.chromium.org/p/chromium/issues/detail?id=387737))
+1. Screenshare is only 720p 30fps. This cannot be fixed by forcing frameRate, width and height Video constraints.
+2. Audio on both the microphone is stream and the desktop stream is in mono. Forcing the channelCount: 2 constraint solely doesn't fix it. While Chromium recognizes it as stereo, Discord downmixes it.
 3. This doesn't work on the Discord electron client. Since electron uses getUserMedia to share your screen instead of getDisplayMedia we need seperate code to achieve the same result.
 
