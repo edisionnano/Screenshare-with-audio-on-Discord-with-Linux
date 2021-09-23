@@ -16,5 +16,6 @@ It's a pretty simple one and emanates from the paragraph above. Basically, since
 As mentioned in the prologue there are still some issues to be resolved.
 1. Screenshare is only 720p 30fps. This cannot be fixed by forcing frameRate, width and height Video constraints.
 2. Audio on both the microphone is stream and the desktop stream is in mono. Forcing the channelCount: 2 constraint solely doesn't fix it. While Chromium recognizes it as stereo, Discord downmixes it.
-3. This doesn't work on the Discord electron client. Since electron uses getUserMedia to share your screen instead of getDisplayMedia we need seperate code to achieve the same result.
+3. This doesn't work on the Discord electron client. Electron uses getUserMedia to share your screen instead of getDisplayMedia, yet the official Discord client doesn't do any of these. As noted [here](https://blog.discord.com/how-discord-handles-two-and-half-million-concurrent-voice-users-using-webrtc-ce01c3187429), Discord uses a native module called MediaEngine that takes care of all input and output for their desktop and mobile clients which makes it difficult to do anything without a foss drop-in replacement.
+4. This method also won't work on Firefox since this feature isn't supported by it's user agent.
 
