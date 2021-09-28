@@ -17,7 +17,7 @@ As mentioned in the prologue there are still some issues to be resolved.
 1. Screenshare is only 720p 30fps. This cannot be fixed by forcing frameRate, width and height Video constraints.
 2. Audio of both the microphone and desktop streams is mono. Forcing the channelCount: 2 constraint solely doesn't fix it. While Chromium recognizes it as stereo, Discord downmixes it.
 3. This doesn't work on the Discord electron client. Electron uses getUserMedia to share your screen instead of getDisplayMedia, yet the official Discord client doesn't do any of these. As noted [here](https://blog.discord.com/how-discord-handles-two-and-half-million-concurrent-voice-users-using-webrtc-ce01c3187429), Discord uses a native module called MediaEngine that takes care of all input and output for their desktop and mobile clients which makes it difficult to do anything without a foss drop-in replacement.
-4. This method also won't work on Firefox since this feature isn't supported by it's user agent.
+4. This method is also problematic on Firefox, see bellow.
 
 ## The script
 Here's the Javascript code used to achieve screensharing with audio, you probably wanna use something like Tampermonkey to load it for you.
@@ -69,7 +69,26 @@ var gdm = await navigator.mediaDevices.getDisplayMedia({
   audio: true,
   video: true,
 });
+//Stop the fake screenshare after getting permission
+gdm.getTracks().forEach(track => track.stop());
 ```
 For this to work, you need to make sure Discord doesn't capture the microphone called Default in your language, change that on Discord's Voice & Video settings.<br>
 The script is hosted on [OpenUserJS](https://openuserjs.org/scripts/samantas5855/Screenshare_with_Audio/source) and disables Chromium's awful processing only for the stream. If you want to disable them for your microphone too you can do so from Discord's Voice & Video settings or you can use [this](https://openuserjs.org/scripts/samantas5855/WebRTC_effects_remover) Tampermonkey script that disables them globally.<br>
-When you launch Discord from https://discord.com/app or https://canary.discord.com/app or https://ptb.discord.com/app you will be presented with a dialog that asks for your permission to screenshare, it is important that you allow it so that to merge the sound of the default microphone with the desktop video, then you can click the Stop Streaming button and start streaming on any call you may please.
+When you launch Discord from https://discord.com/app or https://canary.discord.com/app or https://ptb.discord.com/app you will be presented with a dialog that asks for your permission to screenshare, it is important that you allow it so that to merge the sound of the default microphone with the desktop video, then you can start streaming on any call you may please.
+
+## What about Firefox?
+Firefox is my browser of choice so getting this to work on it was a priority for me. I've actually gotten pretty close to getting it to work without issues; while screenshare with desktop audio works it's pretty hard to use your microphone on the call. Firefox is a bit more secure that Chromium and actually follows the spec a bit more than it. So unlike Chromium, Firefox doesn't have a default device so we have to capture another input device, thankfully Firefox can list monitors so we capture these. Firefox also doesn't allow us to capture an input device more than once at the same time but we resolved this by automatically stopping the fake screenshare after getting permission. Firefox won't allow us to read the input device labels unless we get getUserMedia permissions. It doesn't allow us to call getDisplayMedia from the console unless we trick it by clicking the screenshare button on Discord first and then calling it from the console. And to top it all off Firefox doesn't seem to support the deviceId constraint even tho it's listed on `navigator.mediaDevices.getSupportedConstraints()`.<br>
+Using the script bellow I was able to screenshare with audio on Discord by choosing my monitor however both my Discord microphone stream and the Desktop stream had the same audio (the monitor) and I couldn't find a way to fix that. Pavucontrol also won't work, probably because Firefox has multiple processes.
+```Javascript
+navigator.mediaDevices.chromiumGetDisplayMedia = navigator.mediaDevices.getDisplayMedia;
+async function getDisplayMedia({video: video, audio: audio} = {video: true, audio: true}) {
+  let captureSystemAudioStream = await navigator.mediaDevices.getUserMedia({audio: true});
+  let [track] = captureSystemAudioStream.getAudioTracks();
+  const gdm = await navigator.mediaDevices.chromiumGetDisplayMedia({video: true, audio: {autoGainControl: false, echoCancellation: false, noiseSuppression: false}});
+  gdm.addTrack(track);
+  return gdm;
+}
+navigator.mediaDevices.getDisplayMedia = getDisplayMedia;
+var gdm = await navigator.mediaDevices.getDisplayMedia({audio: true, video: true});
+gdm.getTracks().forEach(track => track.stop());
+```
