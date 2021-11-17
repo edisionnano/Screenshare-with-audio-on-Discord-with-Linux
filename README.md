@@ -20,7 +20,7 @@ As mentioned in the prologue there are still some issues to be resolved.
 4. This method is also problematic on Firefox, see bellow.
 
 ## The script
-Here's the Javascript code used to achieve screensharing with audio, you probably wanna use something like Violentmonkey to load it for you.
+Here's the Javascript code used to achieve screensharing with audio, you probably wanna use something like [Violentmonkey](https://chrome.google.com/webstore/detail/violentmonkey/jinjaccalgkegednnccohejagnlnfdag) to load it for you.
 ```Javascript
 // ==UserScript==
 // @name         Screenshare with Audio
@@ -73,7 +73,7 @@ var gdm = await navigator.mediaDevices.getDisplayMedia({
 gdm.getTracks().forEach(track => track.stop());
 ```
 For this to work, you need to make sure Discord doesn't capture the microphone called Default in your language, change that on Discord's Voice & Video settings.<br>
-The script is hosted on [OpenUserJS](https://openuserjs.org/scripts/samantas5855/Screenshare_with_Audio/source) and disables Chromium's awful processing only for the stream. If you want to disable them for your microphone too you can do so from Discord's Voice & Video settings or you can use [this](https://openuserjs.org/scripts/samantas5855/WebRTC_effects_remover) Violentmonkey script that disables them globally.<br>
+The script is hosted on [OpenUserJS](https://openuserjs.org/scripts/samantas5855/Screenshare_with_Audio/) and disables Chromium's awful processing only for the stream. If you want to disable them for your microphone too you can do so from Discord's Voice & Video settings or you can use [this](https://openuserjs.org/scripts/samantas5855/WebRTC_effects_remover) userscript that disables them globally.<br>
 When you launch Discord from https://discord.com/app or https://canary.discord.com/app or https://ptb.discord.com/app you will be presented with a dialog that asks for your permission to screenshare, it is important that you allow it so that to merge the sound of the default microphone with the desktop video, then you can start streaming on any call you may please.
 
 ## What about Firefox?
