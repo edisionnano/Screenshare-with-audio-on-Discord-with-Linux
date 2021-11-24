@@ -25,55 +25,57 @@ Here's the Javascript code used to achieve screensharing with audio, you probabl
 // ==UserScript==
 // @name         Screenshare with Audio
 // @namespace    https://github.com/edisionnano
-// @version      0.1
+// @version      0.2
 // @description  Screenshare with Audio on Discord
 // @author       Guest271314 and Samantas5855
-// @match        https://discord.com/*
+// @match        https://*.discord.com/*
 // @icon         https://www.google.com/s2/favicons?domain=discord.com
 // @grant        none
 // @license      MIT
 // ==/UserScript==
 navigator.mediaDevices.chromiumGetDisplayMedia =
   navigator.mediaDevices.getDisplayMedia;
-async function getDisplayMedia(
-  { video: video, audio: audio } = { video: true, audio: true }
-) {
+ 
+const getDisplayMedia = async () => {
   let captureSystemAudioStream = await navigator.mediaDevices.getUserMedia({
     audio: {
-        // We add our audio constraints here, to get a list of supported constraints use navigator.mediaDevices.getSupportedConstraints();
-        // We must capture a microphone, we use default since its the only deviceId that is the same for every Chromium user
-        deviceId: { exact: "default" },
-        // We want auto gain control, noise cancellation and noise suppression disabled so that our stream won't sound bad
-        autoGainControl: false,
-        echoCancellation: false,
-        noiseSuppression: false,
-        // By default Chromium sets channel count for audio devices to 1, we want it to be stereo in case we find a way for Discord to accept stereo screenshare too
-        channelCount: 2,
-        // You can set more audio constraints here, bellow are some examples
-        latency: 0,
-        sampleRate: 48000,
-        sampleSize: 16,
-        volume: 1.0
+      // We add our audio constraints here, to get a list of supported constraints use navigator.mediaDevices.getSupportedConstraints();
+      // We must capture a microphone, we use default since its the only deviceId that is the same for every Chromium user
+      deviceId: { exact: "default" },
+      // We want auto gain control, noise cancellation and noise suppression disabled so that our stream won't sound bad
+      autoGainControl: false,
+      echoCancellation: false,
+      noiseSuppression: false
+      // By default Chromium sets channel count for audio devices to 1, we want it to be stereo in case we find a way for Discord to accept stereo screenshare too
+      //channelCount: 2,
+      // You can set more audio constraints here, bellow are some examples
+      //latency: 0,
+      //sampleRate: 48000,
+      //sampleSize: 16,
+      //volume: 1.0
     }
   });
   let [track] = captureSystemAudioStream.getAudioTracks();
   const gdm = await navigator.mediaDevices.chromiumGetDisplayMedia({
     video: true,
-    audio: true,
+    audio: true
   });
   gdm.addTrack(track);
   return gdm;
-}
+};
 navigator.mediaDevices.getDisplayMedia = getDisplayMedia;
-var gdm = await navigator.mediaDevices.getDisplayMedia({
-  audio: true,
-  video: true,
-});
-//Stop the fake screenshare after getting permission
-gdm.getTracks().forEach(track => track.stop());
+navigator.mediaDevices
+  .getDisplayMedia({
+    audio: true,
+    video: true
+  })
+  .then((gdm) => {
+    //Stop the fake screenshare after getting permission
+    gdm.getTracks().forEach((track) => track.stop());
+  });
 ```
 For this to work, you need to make sure Discord doesn't capture the microphone called Default in your language, change that on Discord's Voice & Video settings.<br>
-The script is hosted on [OpenUserJS](https://openuserjs.org/scripts/samantas5855/Screenshare_with_Audio/) and disables Chromium's awful processing only for the stream. If you want to disable them for your microphone too you can do so from Discord's Voice & Video settings or you can use [this](https://openuserjs.org/scripts/samantas5855/WebRTC_effects_remover) userscript that disables them globally.<br>
+The script is hosted on [OpenUserJS](https://openuserjs.org/scripts/samantas5855/Screenshare_with_Audio/) and [GreasyFork](https://greasyfork.org/en/scripts/436013-screenshare-with-audio) and disables Chromium's awful processing only for the stream. If you want to disable them for your microphone too you can do so from Discord's Voice & Video settings or you can use [this](https://openuserjs.org/scripts/samantas5855/WebRTC_effects_remover) userscript that disables them globally.<br>
 When you launch Discord from https://discord.com/app or https://canary.discord.com/app or https://ptb.discord.com/app you will be presented with a dialog that asks for your permission to screenshare, it is important that you allow it so that to merge the sound of the default microphone with the desktop video, then you can start streaming on any call you may please.
 
 ## What about Firefox?
