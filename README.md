@@ -78,7 +78,7 @@ The script is hosted on [GreasyFork](https://greasyfork.org/en/scripts/436013-sc
 7. Go to Discord's audio settings and make sure the selected microphone isn't the one called "Default" (name will be different depending on the language your browser is on).
 Join a call and start Screensharing.
 8. There are two Chromium processes capturing audio, the first one is your microphone channel and the second one that appears is for the Screenshare stream. Your Screenshare's audio is now your microphone, but you obviously don't want that, here's how to change it:
-    * If you want to share your desktop's full audio (that includes the voices of other people talking on the call) you can use pavucontrol which works on both PulseAudio and PipeWire; simply go to the recording tab and change Chromium to capture your monitor (you'll see two Chromium processes you may have to test the first time to find out which one is which but then pavucontrol should remember it).
+    * If you want to share your desktop's full audio (that includes the voices of other people talking on the call) you can use pavucontrol which works on both PulseAudio and PipeWire; simply go to the recording tab and change Chromium to capture your monitor (you'll see two Chromium processes you may have to test to find out which one is which).
     * If you want to share audio of specific apps you have to use a patchbay like pagraphcontrol, helvum or qjackctl (launch it using pw-jack on PipeWire). The first works on PulseAudio and the other two on PipeWire (the last one works on Jack/Jack2 too).<br>
 <br>
 Tips:
