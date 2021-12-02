@@ -1,5 +1,5 @@
 # Screenshare with audio on Discord with Linux
-This is a WIP
+This repo allows you to Screenshare on Discord with Audio on Linux, on the web app. It does so by redefining Chromium's getDisplayMedia. Technically, this fixes Chromium's ability to Screenshare/Screen Capture with Audio in general so it should work on every other video conferencing service that allows for Screensharing from a browser, if you know of any service other than Discord that does so please open an issue.
 
 ## Prologue
 Screensharing on Discord has been a huge pain for non Windows users since desktop audio would not be captured and until recently there was no option to even pick one screen if you had multiple. Screensharing with desktop audio was recently fixed on Mac OS on the official client only through a proprietary hack since getting desktop audio on Mac isn't easy and you need something like Soundflower to interact with the kernel and electron/chromium don't have such functionality.<br>
@@ -20,12 +20,12 @@ As mentioned in the prologue there are still some issues to be resolved.
 4. This method is also problematic on Firefox, see bellow.
 
 ## The script
-Here's the Javascript code used to achieve screensharing with audio, you probably wanna use something like [Violentmonkey](https://chrome.google.com/webstore/detail/violentmonkey/jinjaccalgkegednnccohejagnlnfdag) to load it for you.
+Bellow, the Javascript code used to achieve Screensharing with Audio:
 ```Javascript
 // ==UserScript==
 // @name         Screenshare with Audio
 // @namespace    https://github.com/edisionnano
-// @version      0.2
+// @version      0.3
 // @description  Screenshare with Audio on Discord
 // @author       Guest271314 and Samantas5855
 // @match        https://*.discord.com/*
@@ -64,19 +64,30 @@ const getDisplayMedia = async () => {
   return gdm;
 };
 navigator.mediaDevices.getDisplayMedia = getDisplayMedia;
-navigator.mediaDevices
-  .getDisplayMedia({
-    audio: true,
-    video: true
-  })
-  .then((gdm) => {
-    //Stop the fake screenshare after getting permission
-    gdm.getTracks().forEach((track) => track.stop());
-  });
 ```
 For this to work, you need to make sure Discord doesn't capture the microphone called Default in your language, change that on Discord's Voice & Video settings.<br>
-The script is hosted on [GreasyFork](https://greasyfork.org/en/scripts/436013-screenshare-with-audio)(recommended mirror) and [OpenUserJS](https://openuserjs.org/scripts/samantas5855/Screenshare_with_Audio/) and disables Chromium's awful processing only for the stream. If you want to disable them for your microphone too you can do so from Discord's Voice & Video settings or you can use [this](https://openuserjs.org/scripts/samantas5855/WebRTC_effects_remover) userscript that disables them globally.<br>
-When you launch Discord from https://discord.com/app or https://canary.discord.com/app or https://ptb.discord.com/app you will be presented with a dialog that asks for your permission to screenshare, it is important that you allow it so that to merge the sound of the default microphone with the desktop video, then you can start streaming on any call you may please.
+The script is hosted on [GreasyFork](https://greasyfork.org/en/scripts/436013-screenshare-with-audio) and [OpenUserJS](https://openuserjs.org/scripts/samantas5855/Screenshare_with_Audio/) and disables Chromium's awful processing only for the desktop stream. If you want to disable them for your microphone too you can do so from Discord's Voice & Video settings or you can use [this](https://openuserjs.org/scripts/samantas5855/WebRTC_effects_remover) userscript that disables them globally.<br>
+
+## How to use it
+1. Make sure you use a Chromium-based browser like Chromium or Brave (Opera, Edge, Chrome and Vivaldi also fall under that category but aren't Open Source thus not recommended).
+2. Install a UserScript manager like [Violentmonkey](https://chrome.google.com/webstore/detail/violentmonkey/jinjaccalgkegednnccohejagnlnfdag).
+3. Click the install button to get the script on [GreasyFork](https://greasyfork.org/en/scripts/436013-screenshare-with-audio) or [OpenUserJS](https://openuserjs.org/scripts/samantas5855/Screenshare_with_Audio/).
+4. Make sure you have at least one physical or virtual input device, like a microphone, as this is needed for Chromium to list the "Default" device. If unsure, you can check with pavucontrol (works on both PulseAudio and PipeWire). Normally, if you have a microphone jack port on your PC and no microphone is plugged it should still count as an input device.
+5. Open the Discord web app from one of the following links. [Normal](https://discord.com/app), [Canary](https://canary.discord.com/app) and [Public Test Build (PTB)](https://ptb.discord.com/app); all work.
+6. If Chromium asks you, allow the microphone to be captured.
+7. Go to Discord's audio settings and make sure the selected microphone isn't the one called "Default" (name will be different depending on the language your browser is on).
+Join a call and start Screensharing.
+8. There are two Chromium processes capturing audio, the first one is your microphone channel and the second one that appears is for the Screenshare stream. Your Screenshare's audio is now your microphone, but you obviously don't want that, here's how to change it:
+    * If you want to share your desktop's full audio (that includes the voices of other people talking on the call) you can use pavucontrol which works on both PulseAudio and PipeWire; simply go to the recording tab and change Chromium to capture your monitor (you'll see two Chromium processes you may have to test the first time to find out which one is which but then pavucontrol should remember it).
+    * If you want to share audio of specific apps you have to use a patchbay like pagraphcontrol, helvum or qjackctl (launch it using pw-jack on PipeWire). The first works on PulseAudio and the other two on PipeWire (the last one works on Jack/Jack2 too).<br>
+<br>
+Tips:
+
+* Use `pactl info` to check whether you use PulseAudio or PipeWire. If you see `Server Name: pulseaudio` you are on PulseAudio, if you see something along the lines of `Server Name: PulseAudio (on PipeWire X.XX.XX)` you are on PipeWire.
+* If you are on Wayland and can't Screenshare on Chromium make sure you are on PipeWire and get the dependencies listed [here](https://wiki.archlinux.org/title/PipeWire#WebRTC_screen_sharing), package names may differ on other distros.
+* To check whether you are on Wayland or X11 use the command echo $XDG_SESSION_TYPE.
+* You can enable desktop notifications on the web app too, check Discord settings.
+* If you want to install themes and plugins like on BetterDiscord, check out the [GooseMod](https://chrome.google.com/webstore/detail/goosemod-for-web/clgkdcccmbjmjdbdgcigpocfkkjeaeld) Chromium addon.
 
 ## What about Firefox?
 Firefox is my browser of choice so getting this to work on it was a priority for me. I've actually gotten pretty close to getting it to work without issues; while screenshare with desktop audio works it's pretty hard to use your microphone on the call. Firefox is a bit more secure that Chromium and actually follows the spec a bit more than it. So unlike Chromium, Firefox doesn't have a default device so we have to capture another input device, thankfully Firefox can list monitors so we capture these. Firefox also doesn't allow us to capture an input device more than once at the same time but we resolved this by automatically stopping the fake screenshare after getting permission. Firefox won't allow us to read the input device labels unless we get getUserMedia permissions. It doesn't allow us to call getDisplayMedia from the console unless we trick it by clicking the screenshare button on Discord first and then calling it from the console. And to top it all off Firefox doesn't seem to support the deviceId constraint even tho it's listed on `navigator.mediaDevices.getSupportedConstraints()`.<br>
