@@ -83,9 +83,9 @@ Join a call and start Screensharing.
 <br>
 Tips:
 
-* Use `pactl info` to check whether you use PulseAudio or PipeWire. If you see `Server Name: pulseaudio` you are on PulseAudio, if you see something along the lines of `Server Name: PulseAudio (on PipeWire X.XX.XX)` you are on PipeWire.
+* Use the terminal command `pactl info` to check whether you use PulseAudio or PipeWire. If you see `Server Name: pulseaudio` you are on PulseAudio, if you see something along the lines of `Server Name: PulseAudio (on PipeWire X.XX.XX)` you are on PipeWire.
 * If you are on Wayland and can't Screenshare on Chromium make sure you are on PipeWire and get the dependencies listed [here](https://wiki.archlinux.org/title/PipeWire#WebRTC_screen_sharing), package names may differ on other distros.
-* To check whether you are on Wayland or X11 use the command echo $XDG_SESSION_TYPE.
+* To check whether you are on Wayland or X11 use the command `echo $XDG_SESSION_TYPE`.
 * You can enable desktop notifications on the web app too, check Discord settings.
 * If you want to install themes and plugins like on BetterDiscord, check out the [GooseMod](https://chrome.google.com/webstore/detail/goosemod-for-web/clgkdcccmbjmjdbdgcigpocfkkjeaeld) Chromium addon.
 
