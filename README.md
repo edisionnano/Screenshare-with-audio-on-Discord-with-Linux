@@ -80,9 +80,8 @@ Join a call and start Screensharing.
 8. There are two Chromium processes capturing audio, the first one is your microphone channel and the second one that appears is for the Screenshare stream. Your Screenshare's audio is now your microphone, but you obviously don't want that, here's how to change it:
     * If you want to share your desktop's full audio (that includes the voices of other people talking on the call) you can use pavucontrol which works on both PulseAudio and PipeWire; simply go to the recording tab and change Chromium to capture your monitor (you'll see two Chromium processes you may have to test to find out which one is which).
     * If you want to share audio of specific app(s) or full desktop audio excluding Chromium check the section bellow.<br>
-<br>
-Tips:
 
+Tips:
 * Use the terminal command `pactl info` to check whether you use PulseAudio or PipeWire. If you see `Server Name: pulseaudio` you are on PulseAudio, if you see something along the lines of `Server Name: PulseAudio (on PipeWire X.XX.XX)` you are on PipeWire.
 * If you are on Wayland and can't Screenshare on Chromium make sure you are on PipeWire and get the dependencies listed [here](https://wiki.archlinux.org/title/PipeWire#WebRTC_screen_sharing), package names may differ on other distros.
 * To check whether you are on Wayland or X11 use the command `echo $XDG_SESSION_TYPE`.
@@ -92,42 +91,42 @@ Tips:
 ## Messing with audio
 After you've configured the script you'll probably want to stream some audio but without capturing Chromium's output.  Since there's no dedicated app for this yet, we can do it easily with the terminal.<br>
 </br>
-**Case A:Capturing all desktop audio minus Chromium**<br>
+**Case A:Capturing all desktop audio minus Chromium**
 1. First we make sure that our terminal is english by running<br>
-`export LC_ALL=C`<br>
+`export LC_ALL=C`
 2. Then we'll create a parameter for our default output<br>
-`DEFAULT_OUTPUT=$(pactl info|sed -n -e 's/^.*Default Sink: //p')`<br>
-* If you are on PulseAudio in order for your default sink to come back when you restart it you should run<br>
-`pactl unload-module module-default-device-restore`<br>
+`DEFAULT_OUTPUT=$(pactl info|sed -n -e 's/^.*Default Sink: //p')`
+    * If you are on PulseAudio in order for your default sink to come back when you restart it you should run<br>
+`pactl unload-module module-default-device-restore`
 3. We'll create two sinks, one for Chromium's audio and the other for the rest of your desktop audio.<br>
 `pactl load-module module-null-sink sink_name=chromium`<br>
-`pactl load-module module-null-sink sink_name=desktop_audio`<br>
+`pactl load-module module-null-sink sink_name=desktop_audio`
 4. Now open your Chromium-based browser and make sure it's playing audio, you can load a YouTube video.<br>
-Then run `pactl list sink-inputs` and copy the sink id corresponding to your Chromium based browser.<br>
+Then run `pactl list sink-inputs` and copy the sink id corresponding to your Chromium based browser.
 5. We want to move the browser to the chromium sink so we run<br>
-`pactl move-sink-input $INDEX chromium`<br>
+`pactl move-sink-input $INDEX chromium`
 where $INDEX is the index id from the previous command.<br>
 You only need to do this once since the next time you create the chromium sink it will remember automatically to throw your browser in.<br>
-* On PulseAudio you can disable this behaviour by running<br>
+    * On PulseAudio you can disable this behaviour by running
 `pactl unload-module module-stream-restore`<br>
-before the move-sink-input command.<br>
+before the move-sink-input command.
 6. Next we want to make sure that all other audio goes to the desktop_audio sink we created so we run<br>
-`pactl set-default-sink desktop_audio`<br>
+`pactl set-default-sink desktop_audio`
 7. And finally we redirect the browser's and the rest of the audio to our physical output<br>
 `pactl load-module module-loopback source=desktop_audio.monitor sink=chromium`<br>
-`pactl load-module module-loopback source=chromium.monitor sink=$DEFAULT_OUTPUT`<br>
-8. Now we have to create a virtual microphone that mirrors our desktop's audio minus our browser's<br>
-* On PulseAudio:
-`pactl load-module module-remap-source master=desktop_audio.monitor source_name=virtmic source_properties=device.description=virtmic`<br>
-* On PipeWire:
-`nohup pw-loopback --capture-props='node.target=desktop_audio' --playback-props='media.class=Audio/Source node.name=virtmic node.description="virtmic"' &`<br>
+`pactl load-module module-loopback source=chromium.monitor sink=$DEFAULT_OUTPUT`
+8. Now we have to create a virtual microphone that mirrors our desktop's audio minus our browser's
+     * On PulseAudio:<br>
+`pactl load-module module-remap-source master=desktop_audio.monitor source_name=virtmic source_properties=device.description=virtmic`
+    * On PipeWire:<br>
+`nohup pw-loopback --capture-props='node.target=desktop_audio' --playback-props='media.class=Audio/Source node.name=virtmic node.description="virtmic"' &`
 9. and make it default so that it gets captured by the Chromium script automatically using<br>
-`pactl set-default-source virtmic`<br>
+`pactl set-default-source virtmic`
 10. After you've finished screensharing you can reset everything by running<br>
 `pulseaudio -k`<br>
 if you are on PulseAudio and<br>
 `systemctl --user restart pipewire`<br>
-on PipeWire.<br>
+on PipeWire.
 <br>
 After you've done this once you can then create a file called desktop.sh including<br>
 
@@ -158,7 +157,7 @@ pactl load-module module-remap-source master=desktop_audio.monitor source_name=v
 pactl set-default-source virtmic
 ```
 
-for PulseAudio users and run it using `sh desktop.sh` every time you want to screenshare with your whole desktop's audio.
+for PulseAudio users and run it using `sh desktop.sh` every time you want to screenshare with your whole desktop's audio.<br>
 
 Tips:
 * If your Chromium-Based browser is Chromium then throwing it on the chromium sink may also throw some electron apps although you probably don't care about sharing electron apps.
