@@ -1,5 +1,5 @@
 # Screenshare with audio on Discord with Linux
-This repo allows you to Screenshare on Discord with Audio on Linux, on the web app without mixing screenshare audio with your microphone. It does so by redefining Chromium's getDisplayMedia. Technically, this fixes Chromium's ability to Screenshare/Screen Capture with Audio in general so it should work on every other video conferencing service that allows for Screensharing from a browser, if you know of any service other than Discord that does so please open an issue.
+This repo allows you to Screenshare on Discord with Audio on Linux, on the web app without mixing Screenshare audio and microphone. It does so by redefining Chromium's getDisplayMedia. Technically, this fixes Chromium's ability to Screenshare/Screen Capture with Audio in general so it should work on every other video conferencing service that allows for Screensharing from a browser, if you know of any service other than Discord that does so please open an issue.
 
 ## Prologue
 Screensharing on Discord has been a huge pain for non Windows users since desktop audio would not be captured and until recently there was no option to even pick one screen if you had multiple. Screensharing with desktop audio was recently fixed on Mac OS on the official client only through a proprietary hack since getting desktop audio on Mac isn't easy and you need something like Soundflower to interact with the kernel and electron/chromium don't have such functionality.<br>
@@ -96,8 +96,6 @@ After you've configured the script you'll probably want to stream some audio but
 `export LC_ALL=C`
 2. Then we'll create a parameter for our default output<br>
 `DEFAULT_OUTPUT=$(pactl info|sed -n -e 's/^.*Default Sink: //p')`
-    * If you are on PulseAudio in order for your default sink to come back when you restart it you should run<br>
-`pactl unload-module module-default-device-restore`
 3. We'll create two sinks, one for Chromium's audio and the other for the rest of your desktop audio.<br>
 `pactl load-module module-null-sink sink_name=chromium`<br>
 `pactl load-module module-null-sink sink_name=desktop_audio`
@@ -112,6 +110,9 @@ You only need to do this once since the next time you create the chromium sink i
 before the move-sink-input command.
 6. Next we want to make sure that all other audio goes to the desktop_audio sink we created so we run<br>
 `pactl set-default-sink desktop_audio`
+    * If you are on PulseAudio in order for your default sink to come back when you restart it then before running this you should run<br>
+`pactl unload-module module-default-device-restore`<br>
+on PipeWire this isn't needed
 7. And finally we redirect the browser's and the rest of the audio to our physical output<br>
 `pactl load-module module-loopback source=desktop_audio.monitor sink=chromium`<br>
 `pactl load-module module-loopback source=chromium.monitor sink=$DEFAULT_OUTPUT`
