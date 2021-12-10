@@ -79,7 +79,7 @@ The script is hosted on [GreasyFork](https://greasyfork.org/en/scripts/436013-sc
 Join a call and start Screensharing.
 8. There are two Chromium processes capturing audio, the first one is your microphone channel and the second one that appears is for the Screenshare stream. Your Screenshare's audio is now your microphone, but you obviously don't want that, here's how to change it:
     * If you want to share your desktop's full audio (that includes the voices of other people talking on the call) you can use pavucontrol which works on both PulseAudio and PipeWire; simply go to the recording tab and change Chromium to capture your monitor (you'll see two Chromium processes you may have to test to find out which one is which).
-    * If you want to share audio of specific apps you have to use a patchbay like pagraphcontrol, helvum or qjackctl (launch it using pw-jack on PipeWire). The first works on PulseAudio and the other two on PipeWire (the last one works on Jack/Jack2 too).<br>
+    * If you want to share audio of specific app(s) or full desktop audio excluding Chromium check the section bellow.<br>
 <br>
 Tips:
 
@@ -88,6 +88,80 @@ Tips:
 * To check whether you are on Wayland or X11 use the command `echo $XDG_SESSION_TYPE`.
 * You can enable desktop notifications on the web app too, check Discord settings.
 * If you want to install themes and plugins like on BetterDiscord, check out the [GooseMod](https://chrome.google.com/webstore/detail/goosemod-for-web/clgkdcccmbjmjdbdgcigpocfkkjeaeld) Chromium addon.
+
+## Messing with audio
+After you've configured the script you'll probably want to stream some audio but without capturing Chromium's output.  Since there's no dedicated app for this yet, we can do it easily with the terminal.<br>
+</br>
+**Case A:Capturing all desktop audio minus Chromium**<br>
+1. First we make sure that our terminal is english by running<br>
+`export LC_ALL=C`<br>
+2. Then we'll create a parameter for our default output<br>
+`DEFAULT_OUTPUT=$(pactl info|sed -n -e 's/^.*Default Sink: //p')`<br>
+* If you are on PulseAudio in order for your default sink to come back when you restart it you should run<br>
+`pactl unload-module module-default-device-restore`<br>
+3. We'll create two sinks, one for Chromium's audio and the other for the rest of your desktop audio.<br>
+`pactl load-module module-null-sink sink_name=chromium`<br>
+`pactl load-module module-null-sink sink_name=desktop_audio`<br>
+4. Now open your Chromium-based browser and make sure it's playing audio, you can load a YouTube video.<br>
+Then run `pactl list sink-inputs` and copy the sink id corresponding to your Chromium based browser.<br>
+5. We want to move the browser to the chromium sink so we run<br>
+`pactl move-sink-input $INDEX chromium`<br>
+where $INDEX is the index id from the previous command.<br>
+You only need to do this once since the next time you create the chromium sink it will remember automatically to throw your browser in.<br>
+* On PulseAudio you can disable this behaviour by running<br>
+`pactl unload-module module-stream-restore`<br>
+before the move-sink-input command.<br>
+6. Next we want to make sure that all other audio goes to the desktop_audio sink we created so we run<br>
+`pactl set-default-sink desktop_audio`<br>
+7. And finally we redirect the browser's and the rest of the audio to our physical output<br>
+`pactl load-module module-loopback source=desktop_audio.monitor sink=chromium`<br>
+`pactl load-module module-loopback source=chromium.monitor sink=$DEFAULT_OUTPUT`<br>
+8. Now we have to create a virtual microphone that mirrors our desktop's audio minus our browser's<br>
+* On PulseAudio:
+`pactl load-module module-remap-source master=desktop_audio.monitor source_name=virtmic source_properties=device.description=virtmic`<br>
+* On PipeWire:
+`nohup pw-loopback --capture-props='node.target=desktop_audio' --playback-props='media.class=Audio/Source node.name=virtmic node.description="virtmic"' &`<br>
+9. and make it default so that it gets captured by the Chromium script automatically using<br>
+`pactl set-default-source virtmic`<br>
+10. After you've finished screensharing you can reset everything by running<br>
+`pulseaudio -k`<br>
+if you are on PulseAudio and<br>
+`systemctl --user restart pipewire`<br>
+on PipeWire.<br>
+<br>
+After you've done this once you can then create a file called desktop.sh including<br>
+
+```Shell
+export LC_ALL=C
+DEFAULT_OUTPUT=$(pactl info|sed -n -e 's/^.*Default Sink: //p')
+pactl load-module module-null-sink sink_name=chromium
+pactl load-module module-null-sink sink_name=desktop_audio
+pactl set-default-sink desktop_audio
+pactl load-module module-loopback source=desktop_audio.monitor sink=$DEFAULT_OUTPUT
+pactl load-module module-loopback source=chromium.monitor sink=$DEFAULT_OUTPUT
+nohup pw-loopback --capture-props='node.target=desktop_audio' --playback-props='media.class=Audio/Source node.name=virtmic node.description="virtmic"' &
+pactl set-default-source virtmic
+```
+
+for PipeWire users or
+
+```Shell
+export LC_ALL=C
+DEFAULT_OUTPUT=$(pactl info|sed -n -e 's/^.*Default Sink: //p')
+pactl unload-module module-default-device-restore
+pactl load-module module-null-sink sink_name=chromium
+pactl load-module module-null-sink sink_name=desktop_audio
+pactl set-default-sink desktop_audio
+pactl load-module module-loopback source=desktop_audio.monitor sink=$DEFAULT_OUTPUT
+pactl load-module module-loopback source=chromium.monitor sink=$DEFAULT_OUTPUT
+pactl load-module module-remap-source master=desktop_audio.monitor source_name=virtmic source_properties=device.description=virtmic
+pactl set-default-source virtmic
+```
+
+for PulseAudio users and run it using `sh desktop.sh` every time you want to screenshare with your whole desktop's audio.
+
+Tips:
+* If your Chromium-Based browser is Chromium then throwing it on the chromium sink may also throw some electron apps although you probably don't care about sharing electron apps.
 
 ## What about Firefox?
 Firefox is my browser of choice so getting this to work on it was a priority for me. I've actually gotten pretty close to getting it to work without issues; while screenshare with desktop audio works it's pretty hard to use your microphone on the call. Firefox is a bit more secure that Chromium and actually follows the spec a bit more than it. So unlike Chromium, Firefox doesn't have a default device so we have to capture another input device, thankfully Firefox can list monitors so we capture these. Firefox also doesn't allow us to capture an input device more than once at the same time but we resolved this by automatically stopping the fake screenshare after getting permission. Firefox won't allow us to read the input device labels unless we get getUserMedia permissions. It doesn't allow us to call getDisplayMedia from the console unless we trick it by clicking the screenshare button on Discord first and then calling it from the console. And to top it all off Firefox doesn't seem to support the deviceId constraint even tho it's listed on `navigator.mediaDevices.getSupportedConstraints()`.<br>
