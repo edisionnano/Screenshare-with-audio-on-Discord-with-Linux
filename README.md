@@ -143,7 +143,7 @@ pactl load-module module-loopback source=chromium.monitor sink=$DEFAULT_OUTPUT
 if pactl info|grep -w "PipeWire">/dev/null; then
     nohup pw-loopback --capture-props='node.target=desktop_audio' --playback-props='media.class=Audio/Source node.name=virtmic node.description="virtmic"' &
 else
-  pactl load-module module-remap-source master=desktop_audio.monitor source_name=virtmic source_properties=device.description=virtmic
+    pactl load-module module-remap-source master=desktop_audio.monitor source_name=virtmic source_properties=device.description=virtmic
 fi
 ```
 
@@ -204,7 +204,7 @@ pactl load-module module-loopback source=$SINK_NAME.monitor sink=$DEFAULT_OUTPUT
 if pactl info|grep -w "PipeWire">/dev/null; then
     nohup pw-loopback --capture-props='node.target=$SINK_NAME' --playback-props='media.class=Audio/Source node.name=virtmic node.description="virtmic"' &
 else
-  pactl load-module module-remap-source master=$SINK_NAME.monitor source_name=virtmic source_properties=device.description=virtmic
+    pactl load-module module-remap-source master=$SINK_NAME.monitor source_name=virtmic source_properties=device.description=virtmic
 fi
 ```
 
