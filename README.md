@@ -35,7 +35,7 @@ Bellow, the Javascript code used to achieve Screensharing with Audio:
 // ==/UserScript==
 navigator.mediaDevices.chromiumGetDisplayMedia =
   navigator.mediaDevices.getDisplayMedia;
- 
+
 const getDisplayMedia = async () => {
   let captureSystemAudioStream = await navigator.mediaDevices.getUserMedia({
     audio: {
@@ -91,7 +91,7 @@ Tips:
 ## Messing with audio
 After you've configured the script you'll probably want to stream some audio but without capturing Chromium's output.  Since there's no dedicated app for this yet, we can do it easily with the terminal.<br>
 </br>
-**Case A:Capturing all desktop audio minus Chromium**
+**Case A: Capturing all desktop audio minus Chromium**
 1. First we make sure that our terminal is english by running<br>
 `export LC_ALL=C`
 2. Then we'll create a parameter for our default output<br>
@@ -121,9 +121,7 @@ on PipeWire this isn't needed
 `pactl load-module module-remap-source master=desktop_audio.monitor source_name=virtmic source_properties=device.description=virtmic`
     * On PipeWire:<br>
 `nohup pw-loopback --capture-props='node.target=desktop_audio' --playback-props='media.class=Audio/Source node.name=virtmic node.description="virtmic"' &`
-9. and make it default so that it gets captured by the Chromium script automatically using<br>
-`pactl set-default-source virtmic`
-10. After you've finished screensharing you can reset everything by running<br>
+9. After you've finished screensharing you can reset everything by running<br>
 `pulseaudio -k`<br>
 if you are on PulseAudio and<br>
 `systemctl --user restart pipewire`<br>
@@ -134,35 +132,91 @@ After you've done this once you can then create a file called desktop.sh includi
 ```Shell
 export LC_ALL=C
 DEFAULT_OUTPUT=$(pactl info|sed -n -e 's/^.*Default Sink: //p')
+if ! pactl info|grep -w "PipeWire">/dev/null; then
+    pactl unload-module module-default-device-restore
+fi
 pactl load-module module-null-sink sink_name=chromium
 pactl load-module module-null-sink sink_name=desktop_audio
 pactl set-default-sink desktop_audio
 pactl load-module module-loopback source=desktop_audio.monitor sink=$DEFAULT_OUTPUT
 pactl load-module module-loopback source=chromium.monitor sink=$DEFAULT_OUTPUT
-nohup pw-loopback --capture-props='node.target=desktop_audio' --playback-props='media.class=Audio/Source node.name=virtmic node.description="virtmic"' &
-pactl set-default-source virtmic
+if pactl info|grep -w "PipeWire">/dev/null; then
+    nohup pw-loopback --capture-props='node.target=desktop_audio' --playback-props='media.class=Audio/Source node.name=virtmic node.description="virtmic"' &
+else
+  pactl load-module module-remap-source master=desktop_audio.monitor source_name=virtmic source_properties=device.description=virtmic
+fi
 ```
 
-for PipeWire users or
+and run it using `sh desktop.sh` every time you want to screenshare with your whole desktop's audio.<br>
+This should work for both PulseAudio and PipeWire.
 
-```Shell
-export LC_ALL=C
-DEFAULT_OUTPUT=$(pactl info|sed -n -e 's/^.*Default Sink: //p')
-pactl unload-module module-default-device-restore
-pactl load-module module-null-sink sink_name=chromium
-pactl load-module module-null-sink sink_name=desktop_audio
-pactl set-default-sink desktop_audio
-pactl load-module module-loopback source=desktop_audio.monitor sink=$DEFAULT_OUTPUT
-pactl load-module module-loopback source=chromium.monitor sink=$DEFAULT_OUTPUT
-pactl load-module module-remap-source master=desktop_audio.monitor source_name=virtmic source_properties=device.description=virtmic
-pactl set-default-source virtmic
-```
-
-for PulseAudio users and run it using `sh desktop.sh` every time you want to screenshare with your whole desktop's audio.<br>
-
-Tips:
+Case A Tips:
 * If your Chromium-Based browser is Chromium then throwing it on the chromium sink may also throw some electron apps although you probably don't care about sharing electron apps.
 * While PipeWire is better than PulseAudio, compatibility with it isn't exactly perfect yet. You may need to throw Chromium to the chromium sink yourself using PavuControl sometimes.
+
+**Case B: Sharing audio from one (or more) specific application(s)**<br>
+Most stuff from above still apply on this case but this one is a bit simpler as we move apps seperately instead of everything minus one app.
+1. We start by running:<br>
+`export LC_ALL=C`<br>
+to set our terminal to English.
+2. And continue by saving the name of our physical audio output to a parameter with the following command:<br>
+`DEFAULT_OUTPUT=$(pactl info|sed -n -e 's/^.*Default Sink: //p')`<br>
+we are going to use this later in order to be able to listed to the app(s) whose audio we're sharing.
+3. We're also going to create a SINK_NAME parameter so that you can copy the commands without having to replace the sink name each time. We only have to make one sink this time, give it an easy name corresponding to the app(s) you are going to throw inside so that you can load it easier the next time too.<br>
+For example, since I'm going to name it `minecraft`, I should run:<br>
+`SINK_NAME=minecraft`<br>
+You should replace the value of `minecraft` with the sink name of your choice.
+4. We now have to make the sink that our app(s) will be thrown into, simply run:<br>
+pactl load-module module-null-sink sink_name=$SINK_NAME
+4.5. The first time we do this the app (in this case Minecraft) has to be running and output audio, then we'll have to find its ID and throw it on the sink on step 5. To make our life easier PulseAudio remembers this so the second time we'll load the sink named `minecraft` it will place the app there automatically even if it's not running or playing audio. This is very handy cause you can have multiple configurations that you can load on the fly. If, for some reason, you want to disable this feature on PulseAudio (not for PipeWire users) run:<br>
+`pactl unload-module module-stream-restore`
+5. You now have to make sure that the apps you want to share are running and are playing audio, then run:<br>
+`pactl list sink-inputs`<br>
+and find the Sink Input ID(s) of the application(s) that you want to share.
+6. Move the applications to the sink using the `pactl move-sink-input` command. For example, Minecraft has Sink Input ID #1 and I want to move it to the minecraft sink. The appropriate command would be:<br>
+`pactl move-sink-input 1 $SINK_NAME`<br>
+and if I wanted to share another app with Sink Input ID #2 simultaneously with Minecraft I'd run:<br>
+`pactl move-sink-input 1 $SINK_NAME`<br>
+You can do this for as many or as little applications you wish, just make sure to replace the Sink Input ID(s) on the example command.
+7. Considering you moved the application(s) correctly you should stop hearing them, to fix this we loop the audio from the sink back to our physical audio output by running:<br>
+`pactl load-module module-loopback source=$SINK_NAME.monitor sink=$DEFAULT_OUTPUT`<br>
+Now you should be able to hear it again.
+8. The final step now is to create a virtual microphone that carries the sound that we want to share
+     * On PulseAudio:<br>
+`pactl load-module module-remap-source master=$SINK_NAME.monitor source_name=virtmic source_properties=device.description=virtmic`
+    * On PipeWire:<br>
+`nohup pw-loopback --capture-props='node.target=$SINK_NAME' --playback-props='media.class=Audio/Source node.name=virtmic node.description="virtmic"' &`
+9. You can reset everything after you've finished by running<br>
+`pulseaudio -k`<br>
+if you are on PulseAudio and<br>
+`systemctl --user restart pipewire`<br>
+on PipeWire.
+<br>
+
+After finishing the tutorial successfully at least once you can create a shell script to do everything with just one command. You can name it `application.sh` and add the following
+
+```Shell
+SINK_NAME=
+export LC_ALL=C
+DEFAULT_OUTPUT=$(pactl info|sed -n -e 's/^.*Default Sink: //p')
+pactl load-module module-null-sink sink_name=$SINK_NAME
+pactl load-module module-loopback source=$SINK_NAME.monitor sink=$DEFAULT_OUTPUT
+if pactl info|grep -w "PipeWire">/dev/null; then
+    nohup pw-loopback --capture-props='node.target=$SINK_NAME' --playback-props='media.class=Audio/Source node.name=virtmic node.description="virtmic"' &
+else
+  pactl load-module module-remap-source master=$SINK_NAME.monitor source_name=virtmic source_properties=device.description=virtmic
+fi
+```
+
+Then either give `SINK_NAME=` a value, have different shell scripts for every sink and run them using `sh application.sh` (replace application.sh if you named it otherwise) OR delete the first line and call the script with a parameter, for example for me that I made the minecraft sink I'd do<br>
+`SINK_NAME=minecraft sh application.sh`
+
+Case B Tips:
+* If you throw an Electron app inside the sink and your browser is Chromium then it may throw that inside too resulting in other users in the call hearing themselves back from the stream. However this is a rare since you probably don't want to share Electron apps.
+* If you are on PipeWire chances are you'll have to throw the app(s) you want to share the sound of in the sinks every time.
+
+**Getting the script to use virtmic**<br>
+If you've followed the tutorial of one of the two cases, chances are that you ended up with a virtual microphone called virtmic that carries the sound you desire to share. However, the script doesn't pick virtmic, it instead picks the input device created by Chromium called default in your language. The reason is simple, that device always exists as long as the system has one input device and its id is always default. If we wanted to explicitly pick a specific device, while possible with JavaScript some issues exist; first of all the virtmic device has to exist, secondly Discord should already have microphone permission and thirdly we have to make sure that in Discord's audio settings neither Default nor virtmic are used as our microphone source. If you have done all these, you can uninstall the script and use [this](https://openuserjs.org/scripts/samantas5855/Screenshare_with_Audio_(virtmic)) version I've specifically created for this case.
 
 ## What about Firefox?
 Firefox is my browser of choice so getting this to work on it was a priority for me. I've actually gotten pretty close to getting it to work without issues; while screenshare with desktop audio works it's pretty hard to use your microphone on the call. Firefox is a bit more secure that Chromium and actually follows the spec a bit more than it. So unlike Chromium, Firefox doesn't have a default device so we have to capture another input device, thankfully Firefox can list monitors so we capture these. Firefox also doesn't allow us to capture an input device more than once at the same time but we resolved this by automatically stopping the fake screenshare after getting permission. Firefox won't allow us to read the input device labels unless we get getUserMedia permissions. It doesn't allow us to call getDisplayMedia from the console unless we trick it by clicking the screenshare button on Discord first and then calling it from the console. And to top it all off Firefox doesn't seem to support the deviceId constraint even tho it's listed on `navigator.mediaDevices.getSupportedConstraints()`.<br>
@@ -180,5 +234,8 @@ navigator.mediaDevices.getDisplayMedia = getDisplayMedia;
 var gdm = await navigator.mediaDevices.getDisplayMedia({audio: true, video: true});
 gdm.getTracks().forEach(track => track.stop());
 ```
+
+If you are interested in Firefox support, follow [this issue](https://bugzilla.mozilla.org/show_bug.cgi?id=1238038).
+
 ## Still have questions?
 Contact me at Samantas5855#2607 on Discord for additional support.
