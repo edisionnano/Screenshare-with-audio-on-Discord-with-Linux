@@ -120,7 +120,7 @@ on PipeWire this isn't needed
      * On PulseAudio:<br>
 `pactl load-module module-remap-source master=desktop_audio.monitor source_name=virtmic source_properties=device.description=virtmic`
     * On PipeWire:<br>
-`nohup pw-loopback --capture-props='node.target=desktop_audio' --playback-props='media.class=Audio/Source node.name=virtmic node.description="virtmic"' &`
+`nohup pw-loopback --capture-props='node.target=desktop_audio' --playback-props='media.class=Audio/Source node.name=virtmic node.description="virtmic"' >/dev/null &`
 9. After you've finished screensharing you can reset everything by running<br>
 `pulseaudio -k`<br>
 if you are on PulseAudio and<br>
@@ -141,7 +141,7 @@ pactl set-default-sink desktop_audio
 pactl load-module module-loopback source=desktop_audio.monitor sink=$DEFAULT_OUTPUT
 pactl load-module module-loopback source=chromium.monitor sink=$DEFAULT_OUTPUT
 if pactl info|grep -w "PipeWire">/dev/null; then
-    nohup pw-loopback --capture-props='node.target=desktop_audio' --playback-props='media.class=Audio/Source node.name=virtmic node.description="virtmic"' &
+    nohup pw-loopback --capture-props='node.target=desktop_audio' --playback-props='media.class=Audio/Source node.name=virtmic node.description="virtmic"' >/dev/null &
 else
     pactl load-module module-remap-source master=desktop_audio.monitor source_name=virtmic source_properties=device.description=virtmic
 fi
@@ -185,7 +185,7 @@ Now you should be able to hear it again.
      * On PulseAudio:<br>
 `pactl load-module module-remap-source master=$SINK_NAME.monitor source_name=virtmic source_properties=device.description=virtmic`
     * On PipeWire:<br>
-`nohup pw-loopback --capture-props='node.target='$SINK_NAME --playback-props='media.class=Audio/Source node.name=virtmic node.description="virtmic"' &`
+`nohup pw-loopback --capture-props='node.target='$SINK_NAME --playback-props='media.class=Audio/Source node.name=virtmic node.description="virtmic"' >/dev/null &`
 9. You can reset everything after you've finished by running<br>
 `pulseaudio -k`<br>
 if you are on PulseAudio and<br>
@@ -202,7 +202,7 @@ DEFAULT_OUTPUT=$(pactl info|sed -n -e 's/^.*Default Sink: //p')
 pactl load-module module-null-sink sink_name=$SINK_NAME
 pactl load-module module-loopback source=$SINK_NAME.monitor sink=$DEFAULT_OUTPUT
 if pactl info|grep -w "PipeWire">/dev/null; then
-    nohup pw-loopback --capture-props='node.target='$SINK_NAME --playback-props='media.class=Audio/Source node.name=virtmic node.description="virtmic"' &
+    nohup pw-loopback --capture-props='node.target='$SINK_NAME --playback-props='media.class=Audio/Source node.name=virtmic node.description="virtmic"' >/dev/null &
 else
     pactl load-module module-remap-source master=$SINK_NAME.monitor source_name=virtmic source_properties=device.description=virtmic
 fi
