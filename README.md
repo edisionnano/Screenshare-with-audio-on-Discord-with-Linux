@@ -110,7 +110,7 @@ You only need to do this once since the next time you create the chromium sink i
 before the move-sink-input command.
 6. Next we want to make sure that all other audio goes to the desktop_audio sink we created so we run<br>
 `pactl set-default-sink desktop_audio`
-    * If you are on PulseAudio in order for your default sink to come back when you restart it then before running this you should run<br>
+    * On PulseAudio in order for your default sink to come back when you restart it then before running this you should run<br>
 `pactl unload-module module-default-device-restore`<br>
 on PipeWire this isn't needed
 7. And finally we redirect the browser's and the rest of the audio to our physical output<br>
@@ -121,12 +121,12 @@ on PipeWire this isn't needed
 `pactl load-module module-remap-source master=desktop_audio.monitor source_name=virtmic source_properties=device.description=virtmic`
     * On PipeWire:<br>
 `nohup pw-loopback --capture-props='node.target=desktop_audio' --playback-props='media.class=Audio/Source node.name=virtmic node.description="virtmic"' >/dev/null &`
-9. After you've finished screensharing you can reset everything by running<br>
-`pulseaudio -k`<br>
-if you are on PulseAudio and<br>
-`systemctl --user restart pipewire`<br>
-on PipeWire.
-<br>
+9. After you've finished screensharing you can reset everything by running
+    * On PulseAudio:<br>
+`pulseaudio -k`
+    * On PipeWire:<br>
+`systemctl --user restart pipewire`
+
 After you've done this once you can then create a file called desktop.sh including<br>
 
 ```Shell
@@ -186,12 +186,11 @@ Now you should be able to hear it again.
 `pactl load-module module-remap-source master=$SINK_NAME.monitor source_name=virtmic source_properties=device.description=virtmic`
     * On PipeWire:<br>
 `nohup pw-loopback --capture-props='node.target='$SINK_NAME --playback-props='media.class=Audio/Source node.name=virtmic node.description="virtmic"' >/dev/null &`
-9. You can reset everything after you've finished by running<br>
-`pulseaudio -k`<br>
-if you are on PulseAudio and<br>
-`systemctl --user restart pipewire`<br>
-on PipeWire.
-<br>
+9. You can reset everything after you've finished by running
+    * On PulseAudio:<br>
+`pulseaudio -k`
+    * On PipeWire:<br>
+`systemctl --user restart pipewire`
 
 After finishing the tutorial successfully at least once you can create a shell script to do everything with just one command. You can name it `application.sh` and add the following
 
