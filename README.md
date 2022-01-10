@@ -17,10 +17,10 @@ As mentioned in the prologue there are still some issues to be resolved.
 1. Screenshare is only 720p 30fps. This cannot be fixed by forcing frameRate, width and height Video constraints.
 2. Audio of both the microphone and desktop streams is mono. Forcing the channelCount: 2 constraint solely doesn't fix it. While Chromium recognizes it as stereo, Discord downmixes it.
 3. This doesn't work on the Discord electron client. Electron uses getUserMedia to share your screen instead of getDisplayMedia, yet the official Discord client doesn't do any of these. As noted [here](https://blog.discord.com/how-discord-handles-two-and-half-million-concurrent-voice-users-using-webrtc-ce01c3187429), Discord uses a native module called MediaEngine that takes care of all input and output for their desktop and mobile clients which makes it difficult to do anything without a foss drop-in replacement.
-4. This method is also problematic on Firefox, see bellow.
+4. This method is also problematic on Firefox, see below.
 
 ## The script
-Bellow, the Javascript code used to achieve Screensharing with Audio:
+Below, the Javascript code used to achieve Screensharing with Audio:
 ```Javascript
 // ==UserScript==
 // @name         Screenshare with Audio
@@ -48,7 +48,7 @@ const getDisplayMedia = async () => {
       noiseSuppression: false
       // By default Chromium sets channel count for audio devices to 1, we want it to be stereo in case we find a way for Discord to accept stereo screenshare too
       //channelCount: 2,
-      // You can set more audio constraints here, bellow are some examples
+      // You can set more audio constraints here, below are some examples
       //latency: 0,
       //sampleRate: 48000,
       //sampleSize: 16,
@@ -79,7 +79,7 @@ The script is hosted on [GreasyFork](https://greasyfork.org/en/scripts/436013-sc
 Join a call and start Screensharing.
 8. There are two Chromium processes capturing audio, the first one is your microphone channel and the second one that appears is for the Screenshare stream. Your Screenshare's audio is now your microphone, but you obviously don't want that, here's how to change it:
     * If you want to share your desktop's full audio (that includes the voices of other people talking on the call) you can use pavucontrol which works on both PulseAudio and PipeWire; simply go to the recording tab and change Chromium to capture your monitor (you'll see two Chromium processes you may have to test to find out which one is which).
-    * If you want to share audio of specific app(s) or full desktop audio excluding Chromium check the section bellow.<br>
+    * If you want to share audio of specific app(s) or full desktop audio excluding Chromium check the section below.<br>
 
 Tips:
 * Use the terminal command `pactl info` to check whether you use PulseAudio or PipeWire. If you see `Server Name: pulseaudio` you are on PulseAudio, if you see something along the lines of `Server Name: PulseAudio (on PipeWire X.XX.XX)` you are on PipeWire.
@@ -110,7 +110,7 @@ You only need to do this once since the next time you create the chromium sink i
 before the move-sink-input command.
 6. Next we want to make sure that all other audio goes to the desktop_audio sink we created so we run<br>
 `pactl set-default-sink desktop_audio`
-    * If you are on PulseAudio in order for your default sink to come back when you restart it then before running this you should run<br>
+    * On PulseAudio in order for your default sink to come back when you restart it then before running this you should run<br>
 `pactl unload-module module-default-device-restore`<br>
 on PipeWire this isn't needed
 7. And finally we redirect the browser's and the rest of the audio to our physical output<br>
@@ -120,13 +120,13 @@ on PipeWire this isn't needed
      * On PulseAudio:<br>
 `pactl load-module module-remap-source master=desktop_audio.monitor source_name=virtmic source_properties=device.description=virtmic`
     * On PipeWire:<br>
-`nohup pw-loopback --capture-props='node.target=desktop_audio' --playback-props='media.class=Audio/Source node.name=virtmic node.description="virtmic"' &`
-9. After you've finished screensharing you can reset everything by running<br>
-`pulseaudio -k`<br>
-if you are on PulseAudio and<br>
-`systemctl --user restart pipewire`<br>
-on PipeWire.
-<br>
+`nohup pw-loopback --capture-props='node.target=desktop_audio' --playback-props='media.class=Audio/Source node.name=virtmic node.description="virtmic"' >/dev/null &`
+9. After you've finished screensharing you can reset everything by running
+    * On PulseAudio:<br>
+`pulseaudio -k`
+    * On PipeWire:<br>
+`systemctl --user restart pipewire`
+
 After you've done this once you can then create a file called desktop.sh including<br>
 
 ```Shell
@@ -141,7 +141,7 @@ pactl set-default-sink desktop_audio
 pactl load-module module-loopback source=desktop_audio.monitor sink=$DEFAULT_OUTPUT
 pactl load-module module-loopback source=chromium.monitor sink=$DEFAULT_OUTPUT
 if pactl info|grep -w "PipeWire">/dev/null; then
-    nohup pw-loopback --capture-props='node.target=desktop_audio' --playback-props='media.class=Audio/Source node.name=virtmic node.description="virtmic"' &
+    nohup pw-loopback --capture-props='node.target=desktop_audio' --playback-props='media.class=Audio/Source node.name=virtmic node.description="virtmic"' >/dev/null &
 else
     pactl load-module module-remap-source master=desktop_audio.monitor source_name=virtmic source_properties=device.description=virtmic
 fi
@@ -167,8 +167,8 @@ For example, since I'm going to name it `minecraft`, I should run:<br>
 `SINK_NAME=minecraft`<br>
 You should replace the value of `minecraft` with the sink name of your choice.
 4. We now have to make the sink that our app(s) will be thrown into, simply run:<br>
-pactl load-module module-null-sink sink_name=$SINK_NAME
-4.5. The first time we do this the app (in this case Minecraft) has to be running and output audio, then we'll have to find its ID and throw it on the sink on step 5. To make our life easier PulseAudio remembers this so the second time we'll load the sink named `minecraft` it will place the app there automatically even if it's not running or playing audio. This is very handy cause you can have multiple configurations that you can load on the fly. If, for some reason, you want to disable this feature on PulseAudio (not for PipeWire users) run:<br>
+`pactl load-module module-null-sink sink_name=$SINK_NAME`<br>
+The first time we do this the app (in this case Minecraft) has to be running and output audio, then we'll have to find its ID and throw it on the sink on step 5. To make our life easier PulseAudio remembers this so the second time we'll load the sink named `minecraft` it will place the app there automatically even if it's not running or playing audio. This is very handy cause you can have multiple configurations that you can load on the fly. If, for some reason, you want to disable this feature on PulseAudio (not for PipeWire users) run:<br>
 `pactl unload-module module-stream-restore`
 5. You now have to make sure that the apps you want to share are running and are playing audio, then run:<br>
 `pactl list sink-inputs`<br>
@@ -185,13 +185,12 @@ Now you should be able to hear it again.
      * On PulseAudio:<br>
 `pactl load-module module-remap-source master=$SINK_NAME.monitor source_name=virtmic source_properties=device.description=virtmic`
     * On PipeWire:<br>
-`nohup pw-loopback --capture-props='node.target=$SINK_NAME' --playback-props='media.class=Audio/Source node.name=virtmic node.description="virtmic"' &`
-9. You can reset everything after you've finished by running<br>
-`pulseaudio -k`<br>
-if you are on PulseAudio and<br>
-`systemctl --user restart pipewire`<br>
-on PipeWire.
-<br>
+`nohup pw-loopback --capture-props='node.target='$SINK_NAME --playback-props='media.class=Audio/Source node.name=virtmic node.description="virtmic"' >/dev/null &`
+9. You can reset everything after you've finished by running
+    * On PulseAudio:<br>
+`pulseaudio -k`
+    * On PipeWire:<br>
+`systemctl --user restart pipewire`
 
 After finishing the tutorial successfully at least once you can create a shell script to do everything with just one command. You can name it `application.sh` and add the following
 
@@ -202,7 +201,7 @@ DEFAULT_OUTPUT=$(pactl info|sed -n -e 's/^.*Default Sink: //p')
 pactl load-module module-null-sink sink_name=$SINK_NAME
 pactl load-module module-loopback source=$SINK_NAME.monitor sink=$DEFAULT_OUTPUT
 if pactl info|grep -w "PipeWire">/dev/null; then
-    nohup pw-loopback --capture-props='node.target=$SINK_NAME' --playback-props='media.class=Audio/Source node.name=virtmic node.description="virtmic"' &
+    nohup pw-loopback --capture-props='node.target='$SINK_NAME --playback-props='media.class=Audio/Source node.name=virtmic node.description="virtmic"' >/dev/null &
 else
     pactl load-module module-remap-source master=$SINK_NAME.monitor source_name=virtmic source_properties=device.description=virtmic
 fi
@@ -220,7 +219,7 @@ If you've followed the tutorial of one of the two cases, chances are that you en
 
 ## What about Firefox?
 Firefox is my browser of choice so getting this to work on it was a priority for me. I've actually gotten pretty close to getting it to work without issues; while screenshare with desktop audio works it's pretty hard to use your microphone on the call. Firefox is a bit more secure that Chromium and actually follows the spec a bit more than it. So unlike Chromium, Firefox doesn't have a default device so we have to capture another input device, thankfully Firefox can list monitors so we capture these. Firefox also doesn't allow us to capture an input device more than once at the same time but we resolved this by automatically stopping the fake screenshare after getting permission. Firefox won't allow us to read the input device labels unless we get getUserMedia permissions. It doesn't allow us to call getDisplayMedia from the console unless we trick it by clicking the screenshare button on Discord first and then calling it from the console. And to top it all off Firefox doesn't seem to support the deviceId constraint even tho it's listed on `navigator.mediaDevices.getSupportedConstraints()`.<br>
-Using the script bellow I was able to screenshare with audio on Discord by choosing my monitor however both my Discord microphone stream and the Desktop stream had the same audio (the monitor) and I couldn't find a way to fix that. Pavucontrol also won't work, probably because Firefox has multiple processes.
+Using the script below I was able to screenshare with audio on Discord by choosing my monitor however both my Discord microphone stream and the Desktop stream had the same audio (the monitor) and I couldn't find a way to fix that. Pavucontrol also won't work, probably because Firefox has multiple processes.
 ```Javascript
 navigator.mediaDevices.chromiumGetDisplayMedia = navigator.mediaDevices.getDisplayMedia;
 async function getDisplayMedia({video: video, audio: audio} = {video: true, audio: true}) {
