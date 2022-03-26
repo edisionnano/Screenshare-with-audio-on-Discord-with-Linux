@@ -176,7 +176,7 @@ and find the Sink Input ID(s) of the application(s) that you want to share.
 6. Move the applications to the sink using the `pactl move-sink-input` command. For example, Minecraft has Sink Input ID #1 and I want to move it to the minecraft sink. The appropriate command would be:<br>
 `pactl move-sink-input 1 $SINK_NAME`<br>
 and if I wanted to share another app with Sink Input ID #2 simultaneously with Minecraft I'd run:<br>
-`pactl move-sink-input 1 $SINK_NAME`<br>
+`pactl move-sink-input 2 $SINK_NAME`<br>
 You can do this for as many or as little applications you wish, just make sure to replace the Sink Input ID(s) on the example command.
 7. Considering you moved the application(s) correctly you should stop hearing them, to fix this we loop the audio from the sink back to our physical audio output by running:<br>
 `pactl load-module module-loopback source=$SINK_NAME.monitor sink=$DEFAULT_OUTPUT`<br>
