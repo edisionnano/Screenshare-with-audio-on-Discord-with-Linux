@@ -22,10 +22,12 @@ As mentioned in the prologue there are still some issues to be resolved.
 ## The script
 Below, the Javascript code used to achieve Screensharing with Audio:
 ```Javascript
+navigator.mediaDevices.getDisplayMedia = getDisplayMedia;
 // ==UserScript==
 // @name         Screenshare with Audio
 // @namespace    https://github.com/edisionnano
-// @version      0.3
+// @version      0.4
+// @updateURL https://openuserjs.org/meta/samantas5855/Screenshare_with_Audio.meta.js
 // @description  Screenshare with Audio on Discord
 // @author       Guest271314 and Samantas5855
 // @match        https://*.discord.com/*
@@ -33,22 +35,45 @@ Below, the Javascript code used to achieve Screensharing with Audio:
 // @grant        none
 // @license      MIT
 // ==/UserScript==
-navigator.mediaDevices.chromiumGetDisplayMedia =
-  navigator.mediaDevices.getDisplayMedia;
+
+/* jshint esversion: 8 */
+
+navigator.mediaDevices.chromiumGetDisplayMedia = navigator.mediaDevices.getDisplayMedia;
+
+const getAudioDevice = async (nameOfAudioDevice) => {
+  await navigator.mediaDevices.getUserMedia({
+    audio: true
+  });
+  let devices = await navigator.mediaDevices.enumerateDevices();
+  let audioDevice = devices.find(({
+    label
+  }) => label === nameOfAudioDevice);
+  return audioDevice;
+};
 
 const getDisplayMedia = async () => {
+  var id;
+  try {
+    let myDiscordAudioSink = await getAudioDevice('virtmic');
+    id = myDiscordAudioSink.deviceId;
+  }
+  catch (error) {
+    id = "default";
+  }
   let captureSystemAudioStream = await navigator.mediaDevices.getUserMedia({
     audio: {
       // We add our audio constraints here, to get a list of supported constraints use navigator.mediaDevices.getSupportedConstraints();
       // We must capture a microphone, we use default since its the only deviceId that is the same for every Chromium user
-      deviceId: { exact: "default" },
+      deviceId: {
+        exact: id
+      },
       // We want auto gain control, noise cancellation and noise suppression disabled so that our stream won't sound bad
       autoGainControl: false,
       echoCancellation: false,
       noiseSuppression: false
       // By default Chromium sets channel count for audio devices to 1, we want it to be stereo in case we find a way for Discord to accept stereo screenshare too
       //channelCount: 2,
-      // You can set more audio constraints here, below are some examples
+      // You can set more audio constraints here, bellow are some examples
       //latency: 0,
       //sampleRate: 48000,
       //sampleSize: 16,
@@ -215,7 +240,7 @@ Case B Tips:
 * If you are on PipeWire chances are you'll have to throw the app(s) you want to share the sound of in the sinks every time.
 
 **Getting the script to use virtmic**<br>
-If you've followed the tutorial of one of the two cases, chances are that you ended up with a virtual microphone called virtmic that carries the sound you desire to share. However, the script doesn't pick virtmic, it instead picks the input device created by Chromium called default in your language. The reason is simple, that device always exists as long as the system has one input device and its id is always default. If we wanted to explicitly pick a specific device, while possible with JavaScript some issues exist; first of all the virtmic device has to exist, secondly Discord should already have microphone permission and thirdly we have to make sure that in Discord's audio settings neither Default nor virtmic are used as our microphone source. If you have done all these, you can uninstall the script and use [this](https://openuserjs.org/scripts/samantas5855/Screenshare_with_Audio_(virtmic)) version I've specifically created for this case.
+The script searches for virtmic by default and only if that's not found does it fallback to Default. Just make sure you have the latest version of the script and that neither Default nor virtmic are selected as input devices on Discord's "Voice & Video" settings.
 
 ## What about Firefox?
 Firefox is my browser of choice so getting this to work on it was a priority for me. I've actually gotten pretty close to getting it to work without issues; while screenshare with desktop audio works it's pretty hard to use your microphone on the call. Firefox is a bit more secure that Chromium and actually follows the spec a bit more than it. So unlike Chromium, Firefox doesn't have a default device so we have to capture another input device, thankfully Firefox can list monitors so we capture these. Firefox also doesn't allow us to capture an input device more than once at the same time but we resolved this by automatically stopping the fake screenshare after getting permission. Firefox won't allow us to read the input device labels unless we get getUserMedia permissions. It doesn't allow us to call getDisplayMedia from the console unless we trick it by clicking the screenshare button on Discord first and then calling it from the console. And to top it all off Firefox doesn't seem to support the deviceId constraint even tho it's listed on `navigator.mediaDevices.getSupportedConstraints()`.<br>
