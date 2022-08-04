@@ -66,6 +66,7 @@ const getAudioDevice = async (nameOfAudioDevice) => {
   await navigator.mediaDevices.getUserMedia({
     audio: true
   });
+  await new Promise(r => setTimeout(r, 1000));
   let devices = await navigator.mediaDevices.enumerateDevices();
   let audioDevice = devices.find(({
     label
