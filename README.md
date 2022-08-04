@@ -246,20 +246,4 @@ Case B Tips:
 The script searches for virtmic by default and only if that's not found does it fallback to Default. Just make sure you have the latest version of the script and that neither Default nor virtmic are selected as input devices on Discord's "Voice & Video" settings.
 
 ## What about Firefox?
-Firefox is my browser of choice so getting this to work on it was a priority for me. I've actually gotten pretty close to getting it to work without issues; while screenshare with desktop audio works it's pretty hard to use your microphone on the call. Firefox is a bit more secure that Chromium and actually follows the spec a bit more than it. So unlike Chromium, Firefox doesn't have a default device so we have to capture another input device, thankfully Firefox can list monitors so we capture these. Firefox also doesn't allow us to capture an input device more than once at the same time but we resolved this by automatically stopping the fake screenshare after getting permission. Firefox won't allow us to read the input device labels unless we get getUserMedia permissions. It doesn't allow us to call getDisplayMedia from the console unless we trick it by clicking the screenshare button on Discord first and then calling it from the console. And to top it all off Firefox doesn't seem to support the deviceId constraint even tho it's listed on `navigator.mediaDevices.getSupportedConstraints()`.<br>
-Using the script below I was able to screenshare with audio on Discord by choosing my monitor however both my Discord microphone stream and the Desktop stream had the same audio (the monitor) and I couldn't find a way to fix that. Pavucontrol also won't work, probably because Firefox has multiple processes.
-```Javascript
-navigator.mediaDevices.chromiumGetDisplayMedia = navigator.mediaDevices.getDisplayMedia;
-async function getDisplayMedia({video: video, audio: audio} = {video: true, audio: true}) {
-  let captureSystemAudioStream = await navigator.mediaDevices.getUserMedia({audio: true});
-  let [track] = captureSystemAudioStream.getAudioTracks();
-  const gdm = await navigator.mediaDevices.chromiumGetDisplayMedia({video: true, audio: {autoGainControl: false, echoCancellation: false, noiseSuppression: false}});
-  gdm.addTrack(track);
-  return gdm;
-}
-navigator.mediaDevices.getDisplayMedia = getDisplayMedia;
-var gdm = await navigator.mediaDevices.getDisplayMedia({audio: true, video: true});
-gdm.getTracks().forEach(track => track.stop());
-```
-
-If you are interested in Firefox support, follow [this issue](https://bugzilla.mozilla.org/show_bug.cgi?id=1238038).
+From Firefox version 101 onward the script works out of the box as long as a microphone named `virtmic` exists since Firefox has no device with id `default`. However when streaming from Firefox there do exist severe audio quality/pitching issues which have not been resolved or reported yet.
