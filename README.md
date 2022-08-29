@@ -1,6 +1,9 @@
 # Screenshare with audio on Discord with Linux
 This repo allows you to Screenshare on Discord with Audio on Linux, on the web app without mixing Screenshare audio and microphone. It does so by redefining Chromium's getDisplayMedia. Technically, this fixes Chromium's ability to Screenshare/Screen Capture with Audio in general so it should work on every other video conferencing service that allows for Screensharing from a browser, if you know of any service other than Discord that does so please open an issue.
 
+## For beginners
+There now exists an app which incorporates this solution and makes it easy and painless for everyone to screenshare with audio on Discord. The app is called discord-screenaudio and you can find it [here](https://github.com/maltejur/discord-screenaudio). It's also available on the Discover appstore for Steam Deck users (blue bag icon). If this app limits you in any way or you don't want to use it, keep reading to learn how you can do this on any browser.
+
 ## How to use it
 1. Make sure you use a Chromium-based browser like Chromium or Brave (Opera, Edge, Chrome and Vivaldi also fall under that category but aren't Open Source thus not recommended).
 2. Install a UserScript manager like [Violentmonkey](https://chrome.google.com/webstore/detail/violentmonkey/jinjaccalgkegednnccohejagnlnfdag).
