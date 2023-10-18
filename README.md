@@ -20,6 +20,7 @@ Tips and notes:
 * You can enable desktop notifications on the web app too, check Discord settings.
 * If you want to install themes and plugins like on BetterDiscord, check out the [GooseMod](https://chrome.google.com/webstore/detail/goosemod-for-web/clgkdcccmbjmjdbdgcigpocfkkjeaeld) Chromium addon.
 * The tool's source code can be found [here](https://github.com/Soundux/rohrkabel/tree/master/examples/link-app-to-mic), huge thanks to Curve for this.
+* Rohrkabel is licensed under the MIT license which can be found [here](https://github.com/Curve/rohrkabel/blob/master/LICENSE)/
 
 
 ## Still have questions?
