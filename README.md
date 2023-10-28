@@ -2,7 +2,13 @@
 This repo allows you to Screenshare on Discord with Audio on Linux, on the web app without mixing Screenshare audio and microphone. It does so by redefining Chromium's getDisplayMedia. Technically, this fixes Chromium's ability to Screenshare/Screen Capture with Audio in general so it should work on every other video conferencing service that allows for Screensharing from a browser, if you know of any service other than Discord that does so please open an issue.
 
 ## For beginners
-There now exists an app which incorporates this solution and makes it easy and painless for everyone to screenshare with audio on Discord. The app is called discord-screenaudio and you can find it [here](https://github.com/maltejur/discord-screenaudio). It's also available on the Discover appstore for Steam Deck users (blue bag icon). If this app limits you in any way or you don't want to use it, keep reading to learn how you can do this on any browser.
+Applications which incorporate this tutorial and automate its steps exist to provide a user-friendly experience. These are the following:
+* [discord-screenaudio](https://github.com/maltejur/discord-screenaudio) is a simple app that uses QTWebEngine, it's available on the AUR as well as FlatHub
+* [Vesktop](https://github.com/Vencord/Vesktop) is an app by Vencord which supports Vencord plugins and themes, it uses Electron to wrap the browser version of Discord into an app. Vesktop is available as an AppImage but can also be found on the AUR
+* [pipewire-screenaudio](https://github.com/IceDBorn/pipewire-screenaudio) is a two-piece Firefox addon and system app which simplifies the process for those using Gecko based browsers to screenshare
+* [My simple GUI](https://gist.github.com/edisionnano/4cd912315ae4e309261147be23ed0dee) is a very straightforward script which uses Zenity to create an app selector dialog, it will also download the virtmic binary for you. Zenity is preinstalled on SteamOS but you may need to install it on other distributions
+
+All the aforementioned have a hard dependency on PipeWire to function, this shouldn't be an issue as every distribution under the sun (except for Linux Mint) has switched to PipeWire. If you are still on PulseAudio or you want to do it manually on your browser of choice keep reading.
 
 ## How to use it
 1. Make sure you use a Chromium-based browser like Chromium or Brave (Opera, Edge, Chrome and Vivaldi also fall under that category but aren't Open Source thus not recommended).
@@ -18,13 +24,11 @@ Tips and notes:
 * If you are on Wayland and can't Screenshare on Chromium make sure you are on PipeWire and get the dependencies listed [here](https://wiki.archlinux.org/title/PipeWire#WebRTC_screen_sharing), package names may differ on other distros.
 * To check whether you are on Wayland or X11 use the command `echo $XDG_SESSION_TYPE`.
 * You can enable desktop notifications on the web app too, check Discord settings.
-* If you want to install themes and plugins like on BetterDiscord, check out the [GooseMod](https://chrome.google.com/webstore/detail/goosemod-for-web/clgkdcccmbjmjdbdgcigpocfkkjeaeld) Chromium addon.
-* The tool's source code can be found [here](https://github.com/Soundux/rohrkabel/tree/master/examples/link-app-to-mic), huge thanks to Curve for this.
+* The tool's source code can be found [here](https://github.com/Curve/rohrkabel/tree/a092c91fe773ea968d98874a604acc31b82531bf/examples/link-app-to-mic), huge thanks to Curve for this.
 * Rohrkabel is licensed under the MIT license which can be found [here](https://github.com/Curve/rohrkabel/blob/master/LICENSE).
 
-
 ## Still have questions?
-Contact me at Samantas5855#2607 on Discord for additional support.<br>
+Contact me at @samantas5855 (was Samantas5855#2607) on Discord for additional support.<br>
 Continue reading if you want to know more about how this works.
 
 ## Prologue
@@ -250,4 +254,4 @@ Case B Tips:
 The script searches for virtmic by default and only if that's not found does it fallback to Default. Just make sure you have the latest version of the script and that neither Default nor virtmic are selected as input devices on Discord's "Voice & Video" settings.
 
 ## What about Firefox?
-From Firefox version 101 onward the script works out of the box as long as a microphone named `virtmic` exists since Firefox has no device with id `default`. However when streaming from Firefox there do exist severe audio quality/pitching issues which have not been resolved or reported yet.
+From Firefox version 101 onward the script works out of the box as long as a microphone named `virtmic` exists since Firefox has no device with id `default`. However when streaming from Firefox there do exist severe audio quality/pitching issues. These issues are fixed on Firefox nightly, a stable release of which is expected by December 5th.
