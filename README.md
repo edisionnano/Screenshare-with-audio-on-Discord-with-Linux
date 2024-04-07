@@ -47,7 +47,6 @@ As mentioned in the prologue there are still some issues to be resolved.
 1. Screenshare is only 720p 30fps. This cannot be fixed by forcing frameRate, width and height Video constraints.
 2. Audio of both the microphone and desktop streams is mono. Forcing the channelCount: 2 constraint solely doesn't fix it. While Chromium recognizes it as stereo, Discord downmixes it.
 3. This doesn't work on the Discord electron client. Electron uses getUserMedia to share your screen instead of getDisplayMedia, yet the official Discord client doesn't do any of these. As noted [here](https://discord.com/blog/how-discord-handles-two-and-half-million-concurrent-voice-users-using-webrtc), Discord uses a native module called MediaEngine that takes care of all input and output for their desktop and mobile clients which makes it difficult to do anything without a foss drop-in replacement.
-4. This method is also problematic on Firefox, see below.
 
 ## The script
 Below, the Javascript code used to achieve Screensharing with Audio:
@@ -254,4 +253,4 @@ Case B Tips:
 The script searches for virtmic by default and only if that's not found does it fallback to Default. Just make sure you have the latest version of the script and that neither Default nor virtmic are selected as input devices on Discord's "Voice & Video" settings.
 
 ## What about Firefox?
-From Firefox version 101 onward the script works out of the box as long as a microphone named `virtmic` exists since Firefox has no device with id `default`. However when streaming from Firefox there do exist severe audio quality/pitching issues. These issues are fixed on Firefox nightly, a stable release of which is expected by December 5th.
+From Firefox version 101 onward the script works out of the box as long as a microphone named `virtmic` exists since Firefox has no device with id `default`. However when streaming from Firefox there do exist severe audio quality/pitching issues on 101, these issues were fixed on later versions.
