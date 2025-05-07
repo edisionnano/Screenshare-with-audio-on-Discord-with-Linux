@@ -45,8 +45,7 @@ It's a pretty simple one and emanates from the paragraph above. Since Chromium c
 ## The Problems
 As mentioned in the prologue there are still some issues to be resolved.
 1. Screenshare is only 720p 30fps. This cannot be fixed by forcing frameRate, width and height Video constraints.
-2. Audio of both the microphone and desktop streams is mono. Forcing the channelCount: 2 constraint solely doesn't fix it. While Chromium recognizes it as stereo, Discord downmixes it.
-3. This doesn't work on the Discord electron client. Electron uses getUserMedia to share your screen instead of getDisplayMedia, yet the official Discord client doesn't do any of these. As noted [here](https://discord.com/blog/how-discord-handles-two-and-half-million-concurrent-voice-users-using-webrtc), Discord uses a native module called MediaEngine that takes care of all input and output for their desktop and mobile clients which makes it difficult to do anything without a foss drop-in replacement.
+2. This doesn't work on the Discord electron client. Electron uses getUserMedia to share your screen instead of getDisplayMedia, yet the official Discord client doesn't do any of these. As noted [here](https://discord.com/blog/how-discord-handles-two-and-half-million-concurrent-voice-users-using-webrtc), Discord uses a native module called MediaEngine that takes care of all input and output for their desktop and mobile clients which makes it difficult to do anything without a foss drop-in replacement.
 
 ## The script
 Below, the Javascript code used to achieve Screensharing with Audio:
@@ -101,8 +100,8 @@ const getDisplayMedia = async () => {
       autoGainControl: false,
       echoCancellation: false,
       noiseSuppression: false
-      // By default Chromium sets channel count for audio devices to 1, we want it to be stereo in case we find a way for Discord to accept stereo screenshare too
-      //channelCount: 2,
+      // By default Chromium sets channel count for audio devices to 1
+      channelCount: 2,
       // You can set more audio constraints here, bellow are some examples
       //latency: 0,
       //sampleRate: 48000,
@@ -119,6 +118,12 @@ const getDisplayMedia = async () => {
   return gdm;
 };
 navigator.mediaDevices.getDisplayMedia = getDisplayMedia;
+
+const originalSetRemoteDescription = RTCPeerConnection.prototype.setRemoteDescription;
+RTCPeerConnection.prototype.setRemoteDescription = function() {
+  arguments[0].sdp = arguments[0].sdp.replaceAll("useinbandfec=1", "useinbandfec=1;stereo=1")
+  return originalSetRemoteDescription.apply(this, arguments);
+}
 ```
 For this to work, you need to make sure Discord doesn't capture the microphone called Default in your language, change that on Discord's Voice & Video settings.<br>
 The script is hosted on [GreasyFork](https://greasyfork.org/en/scripts/436013-screenshare-with-audio) and [OpenUserJS](https://openuserjs.org/scripts/samantas5855/Screenshare_with_Audio/) and disables Chromium's awful processing only for the desktop stream. If you want to disable them for your microphone too you can do so from Discord's Voice & Video settings or you can use [this](https://openuserjs.org/scripts/samantas5855/WebRTC_effects_remover) userscript that disables them globally.<br>
