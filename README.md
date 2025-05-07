@@ -12,7 +12,7 @@ All the aforementioned have a hard dependency on PipeWire to function, this shou
 
 ## How to use it
 1. Make sure you use a Chromium-based browser like Chromium or Brave (Opera, Edge, Chrome and Vivaldi also fall under that category but aren't Open Source thus not recommended).
-2. Install a UserScript manager like [Violentmonkey](https://chrome.google.com/webstore/detail/violentmonkey/jinjaccalgkegednnccohejagnlnfdag).
+2. Install a UserScript manager like [Violentmonkey](https://violentmonkey.github.io/get-it/).
 3. Click the install button to get the script on [GreasyFork](https://greasyfork.org/en/scripts/436013-screenshare-with-audio) or [OpenUserJS](https://openuserjs.org/scripts/samantas5855/Screenshare_with_Audio/).
 4. Open the Discord web app from one of the following links and login. [Normal](https://discord.com/app), [Canary](https://canary.discord.com/app) and [Public Test Build (PTB)](https://ptb.discord.com/app); all work.
 5. Go to Discord's audio settings and make sure the selected microphone isn't the one called "Default" (name will be different depending on the language your browser is on). If Chromium asks you, allow the microphone to be captured.
