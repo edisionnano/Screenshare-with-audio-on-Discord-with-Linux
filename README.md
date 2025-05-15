@@ -1,24 +1,21 @@
 # Screenshare with audio on Discord with Linux
-This repo allows you to Screenshare on Discord with Audio on Linux, on the web app without mixing Screenshare audio and microphone. It does so by redefining Chromium's getDisplayMedia. Technically, this fixes Chromium's ability to Screenshare/Screen Capture with Audio in general so it should work on every other video conferencing service that allows for Screensharing from a browser, if you know of any service other than Discord that does so please open an issue.
+This repo allows you to Screenshare on Discord with Audio on Linux, on the web app without mixing Screenshare audio and microphone. It does so by redefining your browser's getDisplayMedia function. Technically, this fixes the browser's ability to Screenshare/Screen Capture with Audio in general so it should work on every other video conferencing service that allows for Screensharing from a browser like Jitsi.
 
 ## For beginners
 Applications which incorporate this tutorial and automate its steps exist to provide a user-friendly experience. These are the following:
 * [discord-screenaudio](https://github.com/maltejur/discord-screenaudio) is a simple app that uses QTWebEngine, it's available on the AUR as well as FlatHub
 * [Vesktop](https://github.com/Vencord/Vesktop) is an app by Vencord which supports Vencord plugins and themes, it uses Electron to wrap the browser version of Discord into an app. Vesktop is available as an AppImage but can also be found on the AUR
 * [pipewire-screenaudio](https://github.com/IceDBorn/pipewire-screenaudio) is a two-piece Firefox addon and system app which simplifies the process for those using Gecko based browsers to screenshare
-* [My simple GUI](https://gist.github.com/edisionnano/4cd912315ae4e309261147be23ed0dee) is a very straightforward script which uses Zenity to create an app selector dialog, it will also download the virtmic binary for you. Zenity is preinstalled on SteamOS but you may need to install it on other distributions
-
-All the aforementioned have a hard dependency on PipeWire to function, this shouldn't be an issue as every distribution under the sun (except for Linux Mint) has switched to PipeWire. If you are still on PulseAudio or you want to do it manually on your browser of choice keep reading.
+* [My simple GUI](https://gist.github.com/edisionnano/4cd912315ae4e309261147be23ed0dee) is a very straightforward script which uses Zenity to create an app selector dialog, it will also download the virtmic binary for you. Zenity is preinstalled on SteamOS but you may need to install it on other distributions.
 
 ## How to use it
-1. Make sure you use a Chromium-based browser like Chromium or Brave (Opera, Edge, Chrome and Vivaldi also fall under that category but aren't Open Source thus not recommended).
-2. Install a UserScript manager like [Violentmonkey](https://violentmonkey.github.io/get-it/).
-3. Click the install button to get the script on [GreasyFork](https://greasyfork.org/en/scripts/436013-screenshare-with-audio) or [OpenUserJS](https://openuserjs.org/scripts/samantas5855/Screenshare_with_Audio/).
-4. Open the Discord web app from one of the following links and login. [Normal](https://discord.com/app), [Canary](https://canary.discord.com/app) and [Public Test Build (PTB)](https://ptb.discord.com/app); all work.
-5. Go to Discord's audio settings and make sure the selected microphone isn't the one called "Default" (name will be different depending on the language your browser is on). If Chromium asks you, allow the microphone to be captured.
-6. Use the terminal command `pactl info` to check whether you use PulseAudio or PipeWire. If you see `Server Name: pulseaudio` you are on PulseAudio, if you see something along the lines of `Server Name: PulseAudio (on PipeWire X.XX.XX)` you are on PipeWire. If you use PipeWire your life becomes easier since you can use the tool that automates the process, if you are on regular PulseAudio you'll have to stop at this step and follow the manual steps mentioned [here](https://github.com/edisionnano/Screenshare-with-audio-on-Discord-with-Linux#messing-with-audio).
-7. Download the tool from [here](https://github.com/edisionnano/Screenshare-with-audio-on-Discord-with-Linux/blob/main/virtmic?raw=true), make it executable using `chmod +x virtmic` and execute it using `./virtmic`. The tool now asks you for the name of the app you want to share, to find the name of the app you'll have to use `pw-cli ls Node` while the app is running. Once you type it simply hit enter and minimize the terminal.
-8. Start screensharing either your whole screen or a specific app and sound should work.
+1. Install a UserScript manager like [Violentmonkey](https://violentmonkey.github.io/get-it/).
+2. Click the install button to get the script on [GreasyFork](https://greasyfork.org/en/scripts/436013-screenshare-with-audio) or [OpenUserJS](https://openuserjs.org/scripts/samantas5855/Screenshare_with_Audio/).
+3. Open the Discord web app from one of the following links and login. [Normal](https://discord.com/app), [Canary](https://canary.discord.com/app) and [Public Test Build (PTB)](https://ptb.discord.com/app); all work.
+4. Go to Discord's audio settings and make sure the selected microphone isn't the one called "Default" (name will be different depending on the language your browser is on). If your browser asks you, allow the microphone to be captured.
+5. Use the terminal command `pactl info` to check whether you use PulseAudio or PipeWire. If you see `Server Name: pulseaudio` you are on PulseAudio, if you see something along the lines of `Server Name: PulseAudio (on PipeWire X.XX.XX)` you are on PipeWire. If you use PipeWire your life becomes easier since you can use the tool that automates the process, if you are on regular PulseAudio you'll have to stop at this step and follow the manual steps mentioned [here](https://github.com/edisionnano/Screenshare-with-audio-on-Discord-with-Linux#messing-with-audio).
+6. Type `bash <(curl -s https://gist.githubusercontent.com/edisionnano/4cd912315ae4e309261147be23ed0dee/raw/e03e739e1aee407f2163af096604752f8166ed5c/discord.sh)` on your terminal to run my GUI and select a sound source, you can also alias this or save the script locally to run it faster if you want.
+7. Make sure both Violentmonkey and the userscript are enabled, then start screensharing either your whole screen or a specific app and sound should work.
 
 Tips and notes:
 * If you are on Wayland and can't Screenshare on Chromium make sure you are on PipeWire and get the dependencies listed [here](https://wiki.archlinux.org/title/PipeWire#WebRTC_screen_sharing), package names may differ on other distros.
@@ -26,6 +23,8 @@ Tips and notes:
 * You can enable desktop notifications on the web app too, check Discord settings.
 * The tool's source code can be found [here](https://github.com/Curve/rohrkabel/tree/a092c91fe773ea968d98874a604acc31b82531bf/examples/link-app-to-mic), huge thanks to Curve for this.
 * Rohrkabel is licensed under the MIT license which can be found [here](https://github.com/Curve/rohrkabel/blob/master/LICENSE).
+* You can also choose a virtmic source without my GUI, just download the tool from [here](https://github.com/edisionnano/Screenshare-with-audio-on-Discord-with-Linux/blob/main/virtmic?raw=true), make it executable using `chmod +x virtmic` and execute it using `./virtmic`. The tool now asks you for the name of the app you want to share, to find the name of the app you'll have to use `pw-cli ls Node` while the app is running. Once you type it simply hit enter and minimize the terminal.
+* Violentmonkey and other script managers rely on Manifest V2 support, you can re-enable this manually on Chromium-based browsers, check [here](https://github.com/uBlockOrigin/uBlock-issues/discussions/2977#discussioncomment-9521603).
 
 ## Still have questions?
 Contact me at @samantas5855 (was Samantas5855#2607) on Discord for additional support.<br>
@@ -45,18 +44,16 @@ It's a pretty simple one and emanates from the paragraph above. Since Chromium c
 ## The Problems
 As mentioned in the prologue there are still some issues to be resolved.
 1. Screenshare is only 720p 30fps. This cannot be fixed by forcing frameRate, width and height Video constraints.
-2. Audio of both the microphone and desktop streams is mono. Forcing the channelCount: 2 constraint solely doesn't fix it. While Chromium recognizes it as stereo, Discord downmixes it.
-3. This doesn't work on the Discord electron client. Electron uses getUserMedia to share your screen instead of getDisplayMedia, yet the official Discord client doesn't do any of these. As noted [here](https://discord.com/blog/how-discord-handles-two-and-half-million-concurrent-voice-users-using-webrtc), Discord uses a native module called MediaEngine that takes care of all input and output for their desktop and mobile clients which makes it difficult to do anything without a foss drop-in replacement.
+2. This doesn't work on the Discord electron client. Electron uses getUserMedia to share your screen instead of getDisplayMedia, yet the official Discord client doesn't do any of these. As noted [here](https://discord.com/blog/how-discord-handles-two-and-half-million-concurrent-voice-users-using-webrtc), Discord uses a native module called MediaEngine that takes care of all input and output for their desktop and mobile clients which makes it difficult to do anything without a foss drop-in replacement.
 
 ## The script
 Below, the Javascript code used to achieve Screensharing with Audio:
 ```Javascript
-navigator.mediaDevices.getDisplayMedia = getDisplayMedia;
 // ==UserScript==
 // @name         Screenshare with Audio
 // @namespace    https://github.com/edisionnano
-// @version      0.4
-// @updateURL https://openuserjs.org/meta/samantas5855/Screenshare_with_Audio.meta.js
+// @version      0.5
+// @updateURL    https://openuserjs.org/meta/samantas5855/Screenshare_with_Audio.meta.js
 // @description  Screenshare with Audio on Discord
 // @author       Guest271314 and Samantas5855
 // @match        https://*.discord.com/*
@@ -65,81 +62,99 @@ navigator.mediaDevices.getDisplayMedia = getDisplayMedia;
 // @license      MIT
 // ==/UserScript==
 
-/* jshint esversion: 8 */
+/* jshint esversion: 11 */
 
-navigator.mediaDevices.chromiumGetDisplayMedia = navigator.mediaDevices.getDisplayMedia;
+(async () => {
+    'use strict';
 
-const getAudioDevice = async (nameOfAudioDevice) => {
-  await navigator.mediaDevices.getUserMedia({
-    audio: true
-  });
-  await new Promise(r => setTimeout(r, 1000));
-  let devices = await navigator.mediaDevices.enumerateDevices();
-  let audioDevice = devices.find(({
-    label
-  }) => label === nameOfAudioDevice);
-  return audioDevice;
-};
-
-const getDisplayMedia = async () => {
-  var id;
-  try {
-    let myDiscordAudioSink = await getAudioDevice('virtmic');
-    id = myDiscordAudioSink.deviceId;
-  }
-  catch (error) {
-    id = "default";
-  }
-  let captureSystemAudioStream = await navigator.mediaDevices.getUserMedia({
-    audio: {
-      // We add our audio constraints here, to get a list of supported constraints use navigator.mediaDevices.getSupportedConstraints();
-      // We must capture a microphone, we use default since its the only deviceId that is the same for every Chromium user
-      deviceId: {
-        exact: id
-      },
-      // We want auto gain control, noise cancellation and noise suppression disabled so that our stream won't sound bad
-      autoGainControl: false,
-      echoCancellation: false,
-      noiseSuppression: false
-      // By default Chromium sets channel count for audio devices to 1, we want it to be stereo in case we find a way for Discord to accept stereo screenshare too
-      //channelCount: 2,
-      // You can set more audio constraints here, bellow are some examples
-      //latency: 0,
-      //sampleRate: 48000,
-      //sampleSize: 16,
-      //volume: 1.0
+    async function getVirtMicTrack() {
+        await navigator.mediaDevices.getUserMedia({
+            audio: true
+        });
+        await new Promise(r => setTimeout(r, 500));
+        const devices = await navigator.mediaDevices.enumerateDevices();
+        const virtmic = devices.find(d => d.kind === "audioinput" && d.label.toLowerCase().includes("virtmic"));
+        if (!virtmic) {
+            return null;
+        }
+        const stream = await navigator.mediaDevices.getUserMedia({
+            audio: {
+                deviceId: {
+                    exact: virtmic.deviceId
+                },
+                channelCount: 2,
+                autoGainControl: false,
+                echoCancellation: false,
+                noiseSuppression: false
+                // You can set more audio constraints here, bellow are some examples
+                // just don't forget to add a comma at every option other than the last
+                //latency: 0,
+                //sampleRate: 48000,
+                //sampleSize: 16,
+                //volume: 1.0
+            }
+        });
+        return stream.getAudioTracks()[0];
     }
-  });
-  let [track] = captureSystemAudioStream.getAudioTracks();
-  const gdm = await navigator.mediaDevices.chromiumGetDisplayMedia({
-    video: true,
-    audio: true
-  });
-  gdm.addTrack(track);
-  return gdm;
-};
-navigator.mediaDevices.getDisplayMedia = getDisplayMedia;
+
+    const hookDisplayMedia = async () => {
+        if (!navigator.mediaDevices?.getDisplayMedia) {
+            return;
+        }
+
+        const original = navigator.mediaDevices.getDisplayMedia;
+        navigator.mediaDevices.getDisplayMedia = async function(constraints) {
+            const displayStream = await original.call(navigator.mediaDevices, constraints);
+            const virtmicTrack = await getVirtMicTrack();
+            if (!virtmicTrack) return displayStream;
+            displayStream.getAudioTracks().forEach(track => displayStream.removeTrack(track));
+            displayStream.addTrack(virtmicTrack);
+            return displayStream;
+        };
+    };
+
+    let retries = 0;
+    const interval = setInterval(() => {
+        if (retries++ > 10) {
+            clearInterval(interval);
+            return;
+        }
+        if (navigator.mediaDevices?.getDisplayMedia) {
+            clearInterval(interval);
+            hookDisplayMedia();
+        }
+    }, 500);
+
+    //Stereo support thanks to @dakrk
+    const originalSetRemoteDescription = RTCPeerConnection.prototype.setRemoteDescription;
+    RTCPeerConnection.prototype.setRemoteDescription = function(...args) {
+        if (args[0]?.sdp) {
+            args[0].sdp = args[0].sdp.replaceAll('useinbandfec=1', 'useinbandfec=1;stereo=1');
+        }
+        return originalSetRemoteDescription.apply(this, args);
+    };
+})();
 ```
 For this to work, you need to make sure Discord doesn't capture the microphone called Default in your language, change that on Discord's Voice & Video settings.<br>
-The script is hosted on [GreasyFork](https://greasyfork.org/en/scripts/436013-screenshare-with-audio) and [OpenUserJS](https://openuserjs.org/scripts/samantas5855/Screenshare_with_Audio/) and disables Chromium's awful processing only for the desktop stream. If you want to disable them for your microphone too you can do so from Discord's Voice & Video settings or you can use [this](https://openuserjs.org/scripts/samantas5855/WebRTC_effects_remover) userscript that disables them globally.<br>
+The script is hosted on [GreasyFork](https://greasyfork.org/en/scripts/436013-screenshare-with-audio) and [OpenUserJS](https://openuserjs.org/scripts/samantas5855/Screenshare_with_Audio/) and disables your browser's awful audio processing only for the desktop stream. If you want to disable them for your microphone too you can do so from Discord's Voice & Video settings or you can use [this](https://openuserjs.org/scripts/samantas5855/WebRTC_effects_remover) userscript that disables them globally.<br>
 
 ## Messing with audio
-After you've configured the script you'll probably want to stream some audio but without capturing Chromium's output.  Since there's no dedicated app for this yet, we can do it easily with the terminal.<br>
+After you've configured the script you'll probably want to stream some audio but without capturing your browser's output.  Since there's no dedicated app for this yet, we can do it easily with the terminal.<br>
 </br>
-**Case A: Capturing all desktop audio minus Chromium**
+**Case A: Capturing all desktop audio minus the browser**
 1. First we make sure that our terminal is english by running<br>
 `export LC_ALL=C`
 2. Then we'll create a parameter for our default output<br>
 `DEFAULT_OUTPUT=$(pactl info|sed -n -e 's/^.*Default Sink: //p')`
-3. We'll create two sinks, one for Chromium's audio and the other for the rest of your desktop audio.<br>
+3. We'll create two sinks, one for your browser's audio (in this case Chromium) and the other for the rest of your desktop audio.<br>
 `pactl load-module module-null-sink sink_name=chromium`<br>
 `pactl load-module module-null-sink sink_name=desktop_audio`
-4. Now open your Chromium-based browser and make sure it's playing audio, you can load a YouTube video.<br>
-Then run `pactl list sink-inputs` and copy the sink id corresponding to your Chromium based browser.
-5. We want to move the browser to the chromium sink so we run<br>
+4. Now start your browser and make sure it's playing audio, you can load a YouTube video.<br>
+Then run `pactl list sink-inputs` and copy the sink id corresponding to your browser.
+5. We want to move the browser to the sink we created for the browser so we run<br>
 `pactl move-sink-input $INDEX chromium`
 where $INDEX is the index id from the previous command.<br>
-You only need to do this once since the next time you create the chromium sink it will remember automatically to throw your browser in.<br>
+You only need to do this once since the next time you create the chromium sink (or whatever else you named it) it will remember automatically to throw your browser in.<br>
     * On PulseAudio you can disable this behaviour by running
 `pactl unload-module module-stream-restore`<br>
 before the move-sink-input command.
@@ -186,8 +201,8 @@ and run it using `sh desktop.sh` every time you want to screenshare with your wh
 This should work for both PulseAudio and PipeWire.
 
 Case A Tips:
-* If your Chromium-Based browser is Chromium then throwing it on the chromium sink may also throw some electron apps although you probably don't care about sharing electron apps.
-* While PipeWire is better than PulseAudio, compatibility with it isn't exactly perfect yet. You may need to throw Chromium to the chromium sink yourself using PavuControl sometimes.
+* If your browser is Chromium then throwing it on the chromium sink may also throw some electron apps although you probably don't care about sharing electron apps.
+* While PipeWire is better than PulseAudio, compatibility with it isn't exactly perfect yet. You may need to throw your browser to the chromium sink yourself using PavuControl sometimes.
 
 **Case B: Sharing audio from one (or more) specific application(s)**<br>
 Most stuff from above still apply on this case but this one is a bit simpler as we move apps seperately instead of everything minus one app.
