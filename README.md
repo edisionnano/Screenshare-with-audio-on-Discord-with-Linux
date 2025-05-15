@@ -52,7 +52,7 @@ Below, the Javascript code used to achieve Screensharing with Audio:
 // ==UserScript==
 // @name         Screenshare with Audio
 // @namespace    https://github.com/edisionnano
-// @version      0.5
+// @version      0.6
 // @updateURL    https://openuserjs.org/meta/samantas5855/Screenshare_with_Audio.meta.js
 // @description  Screenshare with Audio on Discord
 // @author       Guest271314 and Samantas5855
